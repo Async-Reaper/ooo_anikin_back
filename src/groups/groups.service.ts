@@ -20,7 +20,6 @@ export class GroupsService {
         } else {
             await this.groupRepository.update(dto, {where: {guid: dto.guid}})
         }
-        await group.save();
         throw new HttpException({message: "Группа успешно создана"}, HttpStatus.OK);
     }
 
