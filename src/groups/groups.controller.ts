@@ -1,9 +1,8 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards} from '@nestjs/common';
-import {ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {GroupsService} from "./groups.service";
-import {CreateGroupsDto} from "./dto/create-groups.dto";
-import {Group} from "./groups.model";
-import {JwtAuthGuard} from "../auth/jwt-auth.guard";
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { GroupsService } from "./groups.service";
+import { CreateGroupsDto } from "./dto/create-groups.dto";
+import { Group } from "./groups.model";
 
 
 @ApiTags('Группы товаров')
@@ -12,55 +11,30 @@ export class GroupsController {
     constructor(private groupService: GroupsService) {}
 
     @ApiOperation({summary: 'Создание группы'})
-    @ApiResponse({status: 200, type: Group})
+    @ApiResponse({status: 200, type: "Группа успешно создана"})
     @Post()
-    // @UseGuards(JwtAuthGuard)
     create(@Body() groupDto: CreateGroupsDto, @Req() request: Request) {
-        return this.groupService.createGroup(groupDto, request);
+        return this.groupService.create(groupDto, request);
     }
-    //
-    // @ApiOperation({summary: 'Редактирование портфолио'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Put('/:portfolioId')
-    // @UseGuards(JwtAuthGuard)
-    // update(@Param('portfolioId') id: number, @Body() portfolio: UpdatePortfolioDto, @Req() request: Request) {
-    //     return this.portfolioService.updatePortfolio(id, portfolio, request);
-    // }
-    //
-    // @ApiOperation({summary: 'Удаление портфолио'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Delete('/:portfolioId')
-    // @UseGuards(JwtAuthGuard)
-    // delete(@Param('portfolioId') id: number) {
-    //     return this.portfolioService.deletePortfolio(id);
-    // }
-    //
-    //
-    // @ApiOperation({summary: 'Получение всех портфолио для авторизованного пользователя'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Get('/user')
-    // getAllAuthPortUser(@Req() request: Request) {
-    //     return this.portfolioService.getAllPortAuthUser(request);
-    // }
-    //
-    // @ApiOperation({summary: 'Получение всех портфолио для неавторизованного пользователя'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Get('/:portfolioId')
-    // getAllPortNoAuthUser(@Param('portfolioId') id: number) {
-    //     return this.portfolioService.getAllPortNoAuthUser(id);
-    // }
-    //
-    // @ApiOperation({summary: 'Получение всех портфолио'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Get('')
-    // getAll() {
-    //     return this.portfolioService.getAll();
-    // }
-    //
-    // @ApiOperation({summary: 'Получение портфолио по id'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Get('brands/:portfolioId')
-    // getOne(@Param('portfolioId') id: number) {
-    //     return this.portfolioService.getOne(id);
-    // }
+
+    @ApiOperation({summary: 'Удаление группы'})
+    @ApiResponse({status: 200, type: "Группа успешно удалена"})
+    @Delete('/:id')
+    delete(@Param('id') id: number) {
+        return this.groupService.delete(id);
+    }
+
+    @ApiOperation({summary: 'Получение всех групп'})
+    @ApiResponse({status: 200, type: Group})
+    @Get('')
+    getAll() {
+        return this.groupService.getAll();
+    }
+
+    @ApiOperation({summary: 'Получение группы по id'})
+    @ApiResponse({status: 200, type: Group})
+    @Get('/:id')
+    getOne(@Param('id') id: number) {
+        return this.groupService.getOne(id);
+    }
 }
