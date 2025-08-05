@@ -37,6 +37,10 @@ export class AuthService {
     return users.find(user => user.userName === userDto.login && user)
   }
 
+  async searchUser(userGUID: string) {
+    return users.find(user => user.userGUID === userGUID && user)
+  }
+
   private async generateToken(user: UserDto) {
     const payload = user;
     const access_token = this.jwtService.sign(
@@ -66,6 +70,6 @@ export class AuthService {
   async init(token: string) {
     const userInfo = this.jwtService.decode(token)
     console.log(userInfo)
-    users.find(user => user.userGUID === userInfo.userId && user)
+    // users.find(user => user.userGUID === userInfo.userId && user)
   }
 }

@@ -22,16 +22,17 @@ export class AuthController {
 
   @Post('refresh')
   @ApiOperation({ summary: 'Обновление токена' })
-  async refreshTokens(@Headers('cookie') cookie: string) {
+  async refreshTokens(@Headers('cookie') cookie: any) {
     const refreshCookie = cookie
       ?.split('; ')
       .find((row) => row.startsWith('refresh_token='))
       ?.split('=')[1];
 
 
-    const loginData = this.jwtService.decode(refreshCookie) as AuthDto
+    const refreshData = this.jwtService.decode(refreshCookie) as UserDto;
+    const userData = await this.authService.searchUser(refreshData.userGUID) as UserDto
 
-    const newAccessToken = this.jwtService.sign({ login: loginData.login }, {
+    const newAccessToken = this.jwtService.sign({ userGUID: userData.userGUID, userName: userData.userName }, {
       secret: process.env.JWT_SECRET_ACCESS,
       expiresIn: '30m',
     });
@@ -44,12 +45,8 @@ export class AuthController {
   @Get('init')
   @ApiOperation({ summary: 'Получение инфы о пользователе' })
   @ApiResponse({ status: 200, type: UserDto })
-  init(@Headers('Authorization') cookie: string) {
-    const accessToken = cookie
-      ?.split('; ')
-      .find((row) => row.startsWith('refresh_token='))
-      ?.split('=')[1];
-
-    this.authService.init(accessToken);
+  init(@Headers('authorization') authorization: string) {
+    const userInfo = this.authService.init(authorization);
+    return userInfo
   }
 }
