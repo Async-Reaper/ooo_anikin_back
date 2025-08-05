@@ -17,6 +17,13 @@ export class TradePointController {
         return this.socialLinkService.addTradePoint(request, dto);
     }
 
+    @ApiOperation({summary: 'Удаление торговой точки'})
+    @ApiResponse({status: 200, type: "Торговая точка удалена"})
+    @Delete('/:id')
+    delete(@Param('id') id: number, @Req() request: Request) {
+        return this.socialLinkService.deleteTradePoint(id, request);
+    }
+
     @ApiOperation({summary: 'Получение всех торговых точек'})
     @ApiResponse({status: 200, type: TradePoint})
     @Get()
@@ -29,12 +36,5 @@ export class TradePointController {
     @Get('/:id')
     getOne(@Param('id') id: number) {
         return this.socialLinkService.getTradePoint(id);
-    }
-
-    @ApiOperation({summary: 'Удаление торговой точки'})
-    @ApiResponse({status: 200, type: "Торговая точка удалена"})
-    @Delete('/:id')
-    delete(@Param('id') id: number, @Req() request: Request) {
-        return this.socialLinkService.deleteTradePoint(id, request);
     }
 }

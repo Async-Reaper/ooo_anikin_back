@@ -26,7 +26,7 @@ export class BrandController {
 
     @ApiOperation({summary: 'Получение всех групп'})
     @ApiResponse({status: 200, type: Brand})
-    @Get('')
+    @Get()
     getAll() {
         return this.brandService.getAll();
     }

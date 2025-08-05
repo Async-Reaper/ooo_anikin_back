@@ -12,7 +12,7 @@ interface BrandCreationAttrs {
 export class Brand extends Model<Brand, BrandCreationAttrs> {
   @ApiProperty({ example: 32, description: 'ID Бренда' })
   @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true })
-  id: number;
+  declare id: number;
 
   @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID Бренда' })
   @Column({ type: DataType.STRING, unique: true, primaryKey: true })

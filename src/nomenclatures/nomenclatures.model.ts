@@ -4,9 +4,10 @@ import { Brand } from "../brands/brand.model";
 import { Group } from "../groups/groups.model";
 
 interface NomenclaturesCreationAttrs {
+    id: number;
     guid: string;
-    brandGUID: number;
-    groupGUID: number;
+    brandGUID: string;
+    groupGUID: string;
     img: string;
     description: string;
     shortName: string;
@@ -21,7 +22,7 @@ interface NomenclaturesCreationAttrs {
 export class Nomenclatures extends Model<Nomenclatures, NomenclaturesCreationAttrs> {
     @ApiProperty({ example: 32, description: 'ID Номеклатуры' })
     @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true })
-    id: number;
+    declare id: number;
 
     @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID Номеклатуры' })
     @Column({ type: DataType.INTEGER, unique: true, primaryKey: true })

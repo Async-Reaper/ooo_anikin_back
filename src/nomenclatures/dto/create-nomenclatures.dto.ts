@@ -11,10 +11,10 @@ export class CreateNomenclaturesDto {
   readonly shortName: string;
 
   @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID бренда' })
-  readonly brandGUID: number;
+  readonly brandGUID: string;
 
   @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID группы номенклатуры' })
-  readonly groupGUID: number;
+  readonly groupGUID: string;
 
   @ApiProperty({ example: 500, description: 'Вес' })
   readonly weight: number;

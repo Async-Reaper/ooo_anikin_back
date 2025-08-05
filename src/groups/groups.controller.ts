@@ -26,7 +26,7 @@ export class GroupsController {
 
     @ApiOperation({summary: 'Получение всех групп'})
     @ApiResponse({status: 200, type: Group})
-    @Get('')
+    @Get()
     getAll() {
         return this.groupService.getAll();
     }

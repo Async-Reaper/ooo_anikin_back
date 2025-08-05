@@ -11,13 +11,13 @@ import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 export class NewsController {
     constructor(private newsService: NewsService) {}
 
-    // @ApiOperation({summary: 'Создание портфолио'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Post()
-    // @UseGuards(JwtAuthGuard)
-    // create(@Body() portfolioDto: CreateNewsDto, @Req() request: Request) {
-    //     return this.portfolioService.createPortfolio(portfolioDto, request);
-    // }
+    @ApiOperation({summary: 'Создание портфолио'})
+    @ApiResponse({status: 200, type: News})
+    @Post()
+    @UseGuards(JwtAuthGuard)
+    create(@Body() portfolioDto: CreateNewsDto, @Req() request: Request) {
+        console.log("1")
+    }
     //
     // @ApiOperation({summary: 'Редактирование портфолио'})
     // @ApiResponse({status: 200, type: Portfolio})

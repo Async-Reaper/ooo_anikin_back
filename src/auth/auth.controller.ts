@@ -1,8 +1,9 @@
-import { Body, Controller, Headers, Post, Req, Request, Res, Response, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto/auth.dto";
 import { JwtService } from "@nestjs/jwt";
+import { UserDto } from "./dto/user.dto";
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -20,6 +21,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @ApiOperation({ summary: 'Обновление токена' })
   async refreshTokens(@Headers('cookie') cookie: string) {
     const refreshCookie = cookie
       ?.split('; ')
@@ -37,5 +39,17 @@ export class AuthController {
     return {
       access_tokens: newAccessToken
     }
+  }
+
+  @Get('init')
+  @ApiOperation({ summary: 'Получение инфы о пользователе' })
+  @ApiResponse({ status: 200, type: UserDto })
+  init(@Headers('Authorization') cookie: string) {
+    const accessToken = cookie
+      ?.split('; ')
+      .find((row) => row.startsWith('refresh_token='))
+      ?.split('=')[1];
+
+    this.authService.init(accessToken);
   }
 }
