@@ -1,6 +1,5 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from 'bcryptjs'
 import { AuthDto } from "./dto/auth.dto";
 import * as process from "node:process";
 import { UserDto } from "./dto/user.dto";
@@ -8,11 +7,13 @@ import { UserDto } from "./dto/user.dto";
 const users = [
   {
     userName: "hui",
-    userGUID: "2"
+    userGUID: "2",
+    debts: 2341
   },
   {
     userName: "pizda",
-    userGUID: "1"
+    userGUID: "1",
+    debts: 2341
   },
 ]
 
@@ -44,10 +45,10 @@ export class AuthService {
   private async generateToken(user: UserDto) {
     const payload = user;
     const access_token = this.jwtService.sign(
-      { userGUID: payload.userGUID, userName: payload.userName },
+      { userGUID: payload.userGUID, userName: payload.userName, debts: payload.debts },
       {
         secret: process.env.JWT_SECRET_ACCESS,
-        expiresIn: '30m'
+        expiresIn: '1h'
       }
     );
 
@@ -67,9 +68,13 @@ export class AuthService {
     }
   }
 
-  async init(token: string) {
+  async init(request: Request) {
+    const token = request.headers['authorization'];
+
+    if (!token) {
+      return new HttpException({ message: "Пользователь не авторизован" }, HttpStatus.UNAUTHORIZED)
+    }
     const userInfo = this.jwtService.decode(token)
-    console.log(userInfo)
-    // users.find(user => user.userGUID === userInfo.userId && user)
+    return userInfo;
   }
 }

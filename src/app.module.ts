@@ -15,6 +15,8 @@ import { GroupsModule } from "./groups/groups.module";
 import { Group } from "./groups/groups.model";
 import { NewsModule } from "./news/news.module";
 import { News } from "./news/news.model";
+import { Basket, BasketItem } from "./basket/basket.model";
+import { BasketModule } from "./basket/basket.module";
 
 @Module({
   controllers: [],
@@ -33,7 +35,7 @@ import { News } from "./news/news.model";
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [Brand, Group, News, Nomenclatures, TradePoint],
+      models: [Brand, Group, News, Nomenclatures, TradePoint, Basket, BasketItem],
       autoLoadModels: true
     }),
     TradePointModule,
@@ -43,7 +45,8 @@ import { News } from "./news/news.model";
     GroupsModule,
     TradePointModule,
     NomenclaturesModule,
-    NewsModule
+    NewsModule,
+    BasketModule
   ]
 })
 export class AppModule {

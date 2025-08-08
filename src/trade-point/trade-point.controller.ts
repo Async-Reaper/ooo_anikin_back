@@ -8,33 +8,33 @@ import {TradePoint} from "./trade-point.model";
 @ApiTags('Торговая точка')
 @Controller('trade-point')
 export class TradePointController {
-    constructor(private socialLinkService: TradePointService) {}
+    constructor(private tradePointService: TradePointService) {}
 
     @ApiOperation({summary: 'Добавление торговой точки'})
     @ApiResponse({status: 200, type: "Торговая точка добавлена"})
     @Post()
     add(@Body() dto: CreateTradePointDto, @Req() request: Request) {
-        return this.socialLinkService.addTradePoint(request, dto);
+        return this.tradePointService.create(request, dto);
     }
 
     @ApiOperation({summary: 'Удаление торговой точки'})
     @ApiResponse({status: 200, type: "Торговая точка удалена"})
     @Delete('/:id')
     delete(@Param('id') id: number, @Req() request: Request) {
-        return this.socialLinkService.deleteTradePoint(id, request);
+        return this.tradePointService.delete(id, request);
     }
 
     @ApiOperation({summary: 'Получение всех торговых точек'})
     @ApiResponse({status: 200, type: TradePoint})
     @Get()
     getAll() {
-        return this.socialLinkService.getAllTradePoint();
+        return this.tradePointService.getAll();
     }
 
     @ApiOperation({summary: 'Получение торговой точки'})
     @ApiResponse({status: 200, type: TradePoint})
     @Get('/:id')
     getOne(@Param('id') id: number) {
-        return this.socialLinkService.getTradePoint(id);
+        return this.tradePointService.get(id);
     }
 }

@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto/auth.dto";
 import { JwtService } from "@nestjs/jwt";
 import { UserDto } from "./dto/user.dto";
+import { JwtAuthGuard } from "./jwt-auth.guard";
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -34,7 +35,7 @@ export class AuthController {
 
     const newAccessToken = this.jwtService.sign({ userGUID: userData.userGUID, userName: userData.userName }, {
       secret: process.env.JWT_SECRET_ACCESS,
-      expiresIn: '30m',
+      expiresIn: '1h',
     });
 
     return {
@@ -45,8 +46,8 @@ export class AuthController {
   @Get('init')
   @ApiOperation({ summary: 'Получение инфы о пользователе' })
   @ApiResponse({ status: 200, type: UserDto })
-  init(@Headers('authorization') authorization: string) {
-    const userInfo = this.authService.init(authorization);
-    return userInfo
+  @UseGuards(JwtAuthGuard)
+  init(@Req() request: Request) {
+    return this.authService.init(request);
   }
 }

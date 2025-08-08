@@ -1,6 +1,28 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { IsInt, IsString } from "class-validator";
 
-export class CreateNomenclaturesDto {
+export class GetBasketDto {
+  @ApiProperty({ example: 1, description: 'ID корзины' })
+  @IsInt({ message: 'Должно быть строкой' })
+  readonly id: number;
+
+  @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID торговой точки' })
+  @IsString({ message: 'Должно быть строкой' })
+  readonly tradePointGUID: string;
+
+  @ApiProperty({ example: "г. Суздаль", description: 'Адрес доставки' })
+  @IsString({ message: 'Должно быть строкой' })
+  readonly address: string;
+
+  readonly items: GetBasketItemDto[]
+}
+
+export class GetBasketItemDto {
+
+  @ApiProperty({ example: 2, description: 'Количество товара' })
+  @IsInt({ message: 'Должно быть числом' })
+  readonly count: number;
+
   @ApiProperty({example: "00000-ABCDR-ab1234-00000", description: 'ID Номенклатуры'})
   readonly guid: string;
 
@@ -36,4 +58,9 @@ export class CreateNomenclaturesDto {
 
   @ApiProperty({ example: 'при температуре от 0℃ до + 6℃', description: 'условия хранения' })
   readonly storageConditions: string;
+
+  readonly additionalInfo?: {
+    price: number,
+    remains: number
+  }
 }

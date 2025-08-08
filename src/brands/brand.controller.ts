@@ -10,28 +10,28 @@ import { CreateBrandDto } from "./dto/create-brand.dto";
 export class BrandController {
     constructor(private brandService: BrandService) {}
 
-    @ApiOperation({summary: 'Создание группы'})
+    @ApiOperation({summary: 'Создание бренда'})
     @ApiResponse({status: 200, type: "Группа успешно создана"})
     @Post()
     create(@Body() groupDto: CreateBrandDto, @Req() request: Request) {
         return this.brandService.create(groupDto, request);
     }
 
-    @ApiOperation({summary: 'Удаление группы'})
+    @ApiOperation({summary: 'Удаление бренда'})
     @ApiResponse({status: 200, type: "Группа успешно удалена"})
     @Delete('/:id')
     delete(@Param('id') id: number) {
         return this.brandService.delete(id);
     }
 
-    @ApiOperation({summary: 'Получение всех групп'})
+    @ApiOperation({summary: 'Получение всех брендов'})
     @ApiResponse({status: 200, type: Brand})
     @Get()
     getAll() {
         return this.brandService.getAll();
     }
 
-    @ApiOperation({summary: 'Получение группы по id'})
+    @ApiOperation({summary: 'Получение бренда по id'})
     @ApiResponse({status: 200, type: Brand})
     @Get('/:id')
     getOne(@Param('id') id: number) {

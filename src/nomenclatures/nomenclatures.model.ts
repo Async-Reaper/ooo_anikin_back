@@ -4,7 +4,6 @@ import { Brand } from "../brands/brand.model";
 import { Group } from "../groups/groups.model";
 
 interface NomenclaturesCreationAttrs {
-    id: number;
     guid: string;
     brandGUID: string;
     groupGUID: string;
@@ -20,60 +19,60 @@ interface NomenclaturesCreationAttrs {
 
 @Table({tableName: 'nomenclatures'})
 export class Nomenclatures extends Model<Nomenclatures, NomenclaturesCreationAttrs> {
-    @ApiProperty({ example: 32, description: 'ID Номеклатуры' })
-    @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true })
-    declare id: number;
-
     @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID Номеклатуры' })
-    @Column({ type: DataType.INTEGER, unique: true, primaryKey: true })
+    @Column({ type: DataType.STRING, unique: true, primaryKey: true })
     guid: string;
 
     @ForeignKey(() => Brand)
-    @ApiProperty({example: 1, description: 'ID бренда'})
-    @Column({type: DataType.STRING, allowNull: false})
+    @ApiProperty({example: "00000-ABCDR-ab1234-00000", description: 'GUID бренда'})
+    @Column({type: DataType.STRING, allowNull: true})
     brandGUID: string;
 
     @BelongsTo(() => Brand, 'brand')
     brandAssociation: Brand
 
     @ForeignKey(() => Group)
-    @ApiProperty({example: 1, description: 'ID группы'})
-    @Column({type: DataType.STRING, allowNull: false})
+    @ApiProperty({example: "00000-ABCDR-ab1234-00000", description: 'GUID группы'})
+    @Column({type: DataType.STRING, allowNull: true})
     groupGUID: string;
 
     @BelongsTo(() => Group, 'group')
     groupAssociation: Group
 
-    @ApiProperty({example: 'ava.jpg', description: 'Изображение'})
-    @Column({type: DataType.STRING, unique: false, allowNull: false})
+    @ApiProperty({example: 'avad.jpg', description: 'Изображение'})
+    @Column({type: DataType.STRING, unique: false, allowNull: true})
     img: string;
 
     @ApiProperty({example: 'Какое-то описание....', description: 'Описание'})
-    @Column({type: DataType.STRING, allowNull: false})
+    @Column({type: DataType.STRING, allowNull: true})
     description: string;
 
     @ApiProperty({example: 'какое-то название', description: 'Краткое название'})
-    @Column({type: DataType.STRING, allowNull: false})
+    @Column({type: DataType.STRING, allowNull: true})
     shortName: string;
 
-    @ApiProperty({example: true, description: 'скидочный товар'})
-    @Column({type: DataType.BOOLEAN, allowNull: false})
+    @ApiProperty({example: true, description: 'Скидочный товар'})
+    @Column({type: DataType.BOOLEAN, allowNull: true})
     isDiscount: boolean;
 
+    @ApiProperty({example: false, description: 'Новый товар'})
+    @Column({type: DataType.BOOLEAN, allowNull: true})
+    isNew: boolean;
+
     @ApiProperty({example: 500, description: 'Вес'})
-    @Column({type: DataType.INTEGER, allowNull: false})
+    @Column({type: DataType.INTEGER, allowNull: true})
     weight: number;
 
     @ApiProperty({example: "гр", description: 'Метод измерения'})
-    @Column({type: DataType.STRING, allowNull: false})
+    @Column({type: DataType.STRING, allowNull: true})
     measurement: string;
 
     @ApiProperty({example: "120 суток (4 месяца)", description: 'Срок годности'})
-    @Column({type: DataType.STRING, allowNull: false})
+    @Column({type: DataType.STRING, allowNull: true})
     expirationDate: string;
 
     @ApiProperty({example: "при температуре от 0℃ до + 6℃", description: 'Условия хранения'})
-    @Column({type: DataType.STRING, allowNull: false})
+    @Column({type: DataType.STRING, allowNull: true})
     storageConditions: string;
 }
 
