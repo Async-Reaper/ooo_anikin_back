@@ -1,20 +1,9 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    Post, Query, Req,
-    UploadedFile,
-    UseGuards,
-    UseInterceptors, UsePipes, ValidationPipe
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Post, Query, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import {NomenclaturesService} from "./nomenclatures.service";
+import { NomenclaturesService } from "./nomenclatures.service";
 import { CreateNomenclaturesDto } from "./dto/create-nomenclatures.dto";
-import {FileInterceptor} from "@nestjs/platform-express";
-import {JwtAuthGuard} from "../auth/jwt-auth.guard";
 import { GetNomenclaturesDto } from "./dto/get-nomenclatures.dto";
+import { Response } from "express";
 
 @ApiTags('Товар')
 @Controller('nomenclatures')
@@ -40,17 +29,20 @@ export class NomenclaturesController {
     @ApiQuery({ name: 'brands', required: false, type: Array })
     @ApiQuery({ name: 'group', required: false, type: String })
     @Get()
+    @Header('Access-Control-Expose-Headers', 'X-Total-Count')
     getAll(
+      @Req() request: Request,
+      @Res({ passthrough: true }) response: Response,
       @Query('page') page: number,
       @Query('limit') limit: number,
-      @Query('tradePoint') tradePoint?: string,  // Если это query-параметр
-      @Query('brands') brands?: string[],        // Массив можно передать как ?brands=brand1,brand2
+      @Query('tradePoint') tradePoint?: string,
+      @Query('brands') brands?: string[],
       @Query('group') group?: string,
       @Query('isDiscount') isDiscount?: boolean,
       @Query('isNew') isNew?: boolean,
       @Query('inStock') inStock?: boolean,
     ) {
-        return this.nomenclaturesService.getAll(page, limit, tradePoint, brands, group, isDiscount, isNew, inStock);
+        return this.nomenclaturesService.getAll(request, response, page, limit, tradePoint, brands, group, isDiscount, isNew, inStock);
     }
 
     @ApiOperation({summary: 'Получение номенклатуры по id'})
@@ -58,5 +50,12 @@ export class NomenclaturesController {
     @Get('/:guid')
     getOne(@Param('guid') guid: string, @Req() request: Request) {
         return this.nomenclaturesService.getOne(guid, request);
+    }
+
+    @ApiOperation({summary: 'Удаление номенклатуры'})
+    @ApiResponse({status: 200, type: GetNomenclaturesDto})
+    @Delete('/:guid')
+    delete(@Param('guid') guid: string) {
+        return this.nomenclaturesService.delete(guid);
     }
 }

@@ -4,6 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 export class GetNomenclaturesDto extends CreateNomenclaturesDto {
   readonly additionalInfo?: {
     price: number,
+    oldPrice?: number,
     remains: number
   }
 }

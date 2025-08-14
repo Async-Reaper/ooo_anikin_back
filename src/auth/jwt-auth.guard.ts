@@ -1,4 +1,4 @@
-import {CanActivate, ExecutionContext, Injectable, UnauthorizedException} from "@nestjs/common";
+import { CanActivate, ExecutionContext, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import {Observable} from "rxjs";
 import {JwtService} from "@nestjs/jwt";
 import * as process from "node:process";
@@ -21,7 +21,7 @@ export class JwtAuthGuard implements CanActivate {
             req.user = user;
             return user;
         } catch (e) {
-            throw new UnauthorizedException({message: 'Произошла ошибка дешифрования токена', detail: e})
+            throw new UnauthorizedException()
         }
     }
 

@@ -6,12 +6,12 @@ import { UserDto } from "./dto/user.dto";
 
 const users = [
   {
-    userName: "hui",
+    userName: "user1",
     userGUID: "2",
     debts: 2341
   },
   {
-    userName: "pizda",
+    userName: "user2",
     userGUID: "1",
     debts: 2341
   },
@@ -48,7 +48,7 @@ export class AuthService {
       { userGUID: payload.userGUID, userName: payload.userName, debts: payload.debts },
       {
         secret: process.env.JWT_SECRET_ACCESS,
-        expiresIn: '1h'
+        expiresIn: '30m'
       }
     );
 
