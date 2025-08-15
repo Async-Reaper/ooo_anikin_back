@@ -31,6 +31,6 @@ RUN echo -e '#!/bin/sh\n\
   yarn start:prod\n\
   wait -n $$(jobs -p)\nexit $?' > /start.sh && chmod +x /start.sh
 
-EXPOSE 80 10000
+EXPOSE 80
 
 CMD ["/start.sh"]
