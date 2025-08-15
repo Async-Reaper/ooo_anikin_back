@@ -14,12 +14,12 @@ const tradePoints = [
     nomenclatures: [
       {
         guid: "00000-ASDASA-ab1234-00000",
-        price: 650,
+        price: 13454,
         remains: 3
       },
       {
         guid: "00000-casas-ab1234-00000",
-        price: 650,
+        price: 134,
         remains: 3
       }
     ]
@@ -29,24 +29,24 @@ const tradePoints = [
     nomenclatures: [
       {
         guid: "asdfasf-casas-ab1234-00000",
-        price: 650,
+        price: 3421,
         remains: 3
       },
       {
         guid: "00000-AaBCsdDR-ab1234-00000",
-        price: 650,
+        price: 1234,
         remains: 3
       },
       {
         guid: "00000-ABCDR-ab1234-00000",
-        price: 650,
-        oldPrice: 1200,
+        price: 2345,
+        oldPrice: 3245,
         remains: 3
       },
       {
         guid: "00000-sadfABCDR-ab1234-00000",
-        price: 650,
-        oldPrice: 1200,
+        price: 4235,
+        oldPrice: 6341,
         remains: 3
       }
     ]
@@ -57,29 +57,29 @@ const nomenclaturesAdditional = [
   {
     guid: "asdfasf-casas-ab1234-00000",
     info: {
-      price: 650,
+      price: 23,
       remains: 3
     },
   },
   {
     guid: "00000-AaBCsdDR-ab1234-00000",
     info: {
-      price: 650,
+      price: 441,
       remains: 3
     }
   },
   {
     guid: "00000-ABCDR-ab1234-00000",
     info: {
-      price: 650,
-      oldPrice: 1200,
+      price: 1234,
+      oldPrice: 2411,
       remains: 3
     }
   },
   {
     guid: "00000-sadfABCDR-ab1234-00000",
     info: {
-      price: 650,
+      price: 432,
       oldPrice: 1200,
       remains: 3
     }
@@ -132,7 +132,7 @@ export class NomenclaturesService {
 
     isNew && (where.isNew = isNew);
 
-    const nomenclatures = await this.nomenclaturesRepository.findAll({
+    const nomenclaturesFromDb = await this.nomenclaturesRepository.findAll({
       limit: limit,
       offset: (page - 1) * limit,
       where
@@ -144,49 +144,59 @@ export class NomenclaturesService {
     response.header('Access-Control-Expose-Headers', 'X-Total-Count');
 
     if (tradePoint && token) {
-      const tradePointMap = new Map(
-        tradePoints.map(tp => [tp.guid, tp.nomenclatures])
-      );
+      const tradePointProducts = tradePoints.find(tradePointItem => tradePointItem.guid === tradePoint).nomenclatures
 
 
-      const result: GetNomenclaturesDto[] = (tradePointMap.get(tradePoint) || [])
-        .map(tradePoint => {
-          const nomenclature = nomenclatures.find(
-            nomenclature => nomenclature.get({ plain: true }).guid === tradePoint.guid
-          );
-
-          if (inStock) {
-            return tradePoint.remains > 0
-              && (nomenclature && {
-                ...nomenclature.get({ plain: true }),
-                additionalInfo: {
-                  price: tradePoint.price,
-                  oldPrice: tradePoint.oldPrice,
-                  remains: tradePoint.remains
-                }
-              })
+      const nomenclaturesForTradePoint = await this.nomenclaturesRepository.findAll({
+        limit: limit,
+        offset: (page - 1) * limit,
+        where: {
+          ...where,
+          guid: { [Op.in]: (tradePointProducts.map(product => product.guid)) }
+        }
+      });
+      const totalCountWithTradePoint = await this.nomenclaturesRepository.count({
+        where:
+          {
+            ...where,
+            guid: { [Op.in]: (tradePointProducts.map(product => product.guid)) }
           }
+      });
 
-          return nomenclature && {
-            ...nomenclature.get({ plain: true }),
-            additionalInfo: {
-              price: tradePoint.price,
-              oldPrice: tradePoint.oldPrice,
-              remains: tradePoint.remains
-            }
-          };
-        })
+      const result: GetNomenclaturesDto[] = tradePointProducts.map(tradePoint => {
+        const nomenclature = nomenclaturesForTradePoint.find(
+          nomenclature => nomenclature.get({ plain: true }).guid === tradePoint.guid
+        );
+
+        if (inStock) {
+          return tradePoint.remains > 0
+            && (nomenclature && {
+              ...nomenclature.get({ plain: true }),
+              additionalInfo: {
+                price: tradePoint.price,
+                oldPrice: tradePoint.oldPrice,
+                remains: tradePoint.remains
+              }
+            })
+        }
+
+        return nomenclature && {
+          ...nomenclature.get({ plain: true }),
+          additionalInfo: {
+            price: tradePoint.price,
+            oldPrice: tradePoint.oldPrice,
+            remains: tradePoint.remains
+          }
+        };
+      })
         .filter(Boolean) as GetNomenclaturesDto[];
 
-      response.header('X-Total-Count', result.length.toString());
+      response.header('X-Total-Count', totalCountWithTradePoint.toString());
       return result
     }
 
-    return nomenclatures
+    return nomenclaturesFromDb
   }
-
-
-
 
 
   async getOne(guid: string, request: Request) {
