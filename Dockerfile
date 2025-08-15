@@ -7,13 +7,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Устанавливаем зависимости
-RUN npm ci
+RUN yarn install
 
 # Копируем исходный код
 COPY . .
 
 # Собираем приложение
-RUN npm run build
+RUN yarn run build
 
 # Шаг 2: Запуск приложения
 FROM node:18-alpine
@@ -25,14 +25,11 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 
-# Устанавливаем зависимости для production (если нужно)
-RUN npm ci --only=production
-
 # Открываем порт, на котором работает приложение
 EXPOSE 5000
 
 # Команда для запуска приложения
-CMD ["npm", "run", "start:prod"]
+CMD ["yarn", "run", "start:prod"]
 
 RUN apk add --no-cache nginx
 
