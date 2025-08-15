@@ -1,47 +1,22 @@
-# Шаг 1: Сборка приложения
-FROM node:18-alpine AS builder
+FROM node:18.0.0-alpine AS build
 
 WORKDIR /app
 
-# Копируем файлы зависимостей
-COPY package*.json ./
+COPY package.json yarn.lock /app/
 
-# Устанавливаем зависимости
 RUN yarn install
 
-# Копируем исходный код
-COPY . .
+COPY ./ /app/
 
-# Собираем приложение
-RUN yarn run build
+RUN yarn build
+RUN yarn start:prod
 
-# Шаг 2: Запуск приложения
-FROM node:18-alpine
+FROM nginx:alpine
 
-WORKDIR /app
+RUN rm -rf /usr/share/nginx/html/*
 
-# Копируем только необходимые файлы
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/dist ./dist
+COPY --from=build /app/build /usr/share/nginx/html
 
-# Открываем порт, на котором работает приложение
-EXPOSE 5000
-
-# Команда для запуска приложения
-CMD ["yarn", "run", "start:prod"]
-
-RUN apk add --no-cache nginx
-
-# Копируем конфиг Nginx
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
-# Стартовый скрипт (запускает и NestJS, и Nginx)
-RUN echo -e '#!/bin/sh\n\
-  nginx\n\
-  npm run start:prod\n\
-  wait -n $$(jobs -p)\nexit $?' > /start.sh && chmod +x /start.sh
-
-EXPOSE 80 3000
-
-CMD ["/start.sh"]
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
