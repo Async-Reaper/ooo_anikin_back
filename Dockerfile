@@ -7,6 +7,7 @@ COPY package.json yarn.lock /app/
 RUN yarn install
 
 COPY ./ /app/
+COPY .env/ /app/
 
 RUN yarn build
 RUN yarn start:prod
