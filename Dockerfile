@@ -37,7 +37,7 @@ CMD ["npm", "run", "start:prod"]
 RUN apk add --no-cache nginx
 
 # Копируем конфиг Nginx
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Стартовый скрипт (запускает и NestJS, и Nginx)
 RUN echo -e '#!/bin/sh\n\
