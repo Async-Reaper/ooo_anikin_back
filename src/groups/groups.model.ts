@@ -12,9 +12,9 @@ interface GroupCreationAttrs {
 export class Group extends Model<Group, GroupCreationAttrs> {
   @ApiProperty({ example: 32, description: 'ID Группы' })
   @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true })
-  id: number;
+  declare id: number;
 
-  @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID Группы' })
+  @ApiProperty({ example: "00000-аABCDR-ab1234-00000", description: 'GUID Группы' })
   @Column({ type: DataType.STRING, unique: true, primaryKey: true })
   guid: string;
 

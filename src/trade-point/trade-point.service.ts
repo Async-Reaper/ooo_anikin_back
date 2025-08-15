@@ -11,7 +11,7 @@ export class TradePointService {
                 private jwtService: JwtService) {
     }
 
-    async getTradePoint(id: number) {
+    async get(id: number) {
         const tradePoint = await this.tradePointRepository.findOne({where: {id}});
         if (!tradePoint) {
             throw new HttpException({message: `Торговой точки с id=${id} не найдено`}, HttpStatus.BAD_REQUEST)
@@ -19,23 +19,22 @@ export class TradePointService {
         return tradePoint
     }
 
-    async getAllTradePoint() {
+    async getAll() {
         const tradePoint = await this.tradePointRepository.findAll();
         return tradePoint
     }
 
-    async addTradePoint(request, dto: CreateTradePointDto) {
+    async create(request, dto: CreateTradePointDto) {
         const tradePoint = await this.tradePointRepository.findOne({where: { guid: dto.guid }})
         if (!tradePoint) {
             await this.tradePointRepository.create(dto);
         } else {
             await this.tradePointRepository.update(dto, {where: {guid: dto.guid}})
         }
-        await tradePoint.save();
-        return tradePoint;
+        throw new HttpException({ message: "Торговая точка успешно создана" }, HttpStatus.OK)
     }
 
-    async deleteTradePoint(id: number, request: Request) {
+    async delete(id: number, request: Request) {
         const token = request.headers['authorization'];
         const tradePoint = await this.tradePointRepository.findOne({where: {id}})
 

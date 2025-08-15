@@ -1,8 +1,10 @@
-import { Body, Controller, Headers, Post, Req, Request, Res, Response, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto/auth.dto";
 import { JwtService } from "@nestjs/jwt";
+import { UserDto } from "./dto/user.dto";
+import { JwtAuthGuard } from "./jwt-auth.guard";
 
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -20,22 +22,33 @@ export class AuthController {
   }
 
   @Post('refresh')
-  async refreshTokens(@Headers('cookie') cookie: string) {
+  @ApiOperation({ summary: 'Обновление токена' })
+  async refreshTokens(@Headers('cookie') cookie: any) {
     const refreshCookie = cookie
       ?.split('; ')
       .find((row) => row.startsWith('refresh_token='))
       ?.split('=')[1];
 
 
-    const loginData = this.jwtService.decode(refreshCookie) as AuthDto
+    const refreshData = this.jwtService.decode(refreshCookie) as UserDto;
+    const userData = await this.authService.searchUser(refreshData.userGUID) as UserDto
 
-    const newAccessToken = this.jwtService.sign({ login: loginData.login }, {
+
+    const newAccessToken = this.jwtService.sign({ userGUID: userData.userGUID, userName: userData.userName, debts: userData.debts }, {
       secret: process.env.JWT_SECRET_ACCESS,
       expiresIn: '30m',
     });
 
     return {
-      access_tokens: newAccessToken
+      access_token: newAccessToken
     }
+  }
+
+  @Get('init')
+  @ApiOperation({ summary: 'Получение инфы о пользователе' })
+  @ApiResponse({ status: 200, type: UserDto })
+  @UseGuards(JwtAuthGuard)
+  init(@Req() request: Request) {
+    return this.authService.init(request);
   }
 }
