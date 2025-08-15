@@ -23,7 +23,7 @@ COPY --from=builder /app/.env ./
 RUN apk add --no-cache nginx
 
 # Копируем конфиг Nginx
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 
 # Стартовый скрипт
 RUN echo -e '#!/bin/sh\n\
