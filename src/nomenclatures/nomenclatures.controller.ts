@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Query, Req, Res } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Headers, Param, Post, Query, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NomenclaturesService } from "./nomenclatures.service";
 import { CreateNomenclaturesDto } from "./dto/create-nomenclatures.dto";
@@ -9,6 +9,16 @@ import { Response } from "express";
 @Controller('nomenclatures')
 export class NomenclaturesController {
     constructor(private nomenclaturesService: NomenclaturesService) {}
+
+    @Get('/1c')
+    getData(@Headers('x-forwarded-proto') proto: string) {
+        if (proto === 'http') {
+            // Логика для HTTP-запросов (от 1С)
+            return { mode: '1C-legacy-http' };
+        }
+        // Стандартная логика
+        return { mode: 'standard-https' };
+    }
 
     @ApiOperation({summary: 'Создание номеклатуры'})
     @ApiResponse({status: 200, type: CreateNomenclaturesDto})
