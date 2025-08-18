@@ -24,7 +24,7 @@ export class TradePoint extends Model<TradePoint, TradePointCreationAttrs> {
 
     @ApiProperty({example: "00000-ABCDR-ab1234-00000", description: 'GUID пользователя'})
     @Column({type: DataType.STRING, allowNull: false})
-    userGUID: string;
+    counterpartyGuid: string;
 
     @ApiProperty({example: "ООО 'Куропатка'" , description: 'Наименование контрангента'})
     @Column({type: DataType.STRING, allowNull: false})

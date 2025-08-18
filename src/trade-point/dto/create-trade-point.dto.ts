@@ -12,7 +12,7 @@ export class CreateTradePointDto {
 
   @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID пользователя' })
   @IsString({ message: 'Должно быть строкой' })
-  readonly userGUID: string;
+  readonly counterpartyGuid: string;
 
   @ApiProperty({ example: "ООО 'Куропатка' ", description: 'Наименование контрангента' })
   @IsString({ message: 'Должно быть строкой' })
