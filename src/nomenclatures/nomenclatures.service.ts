@@ -94,15 +94,20 @@ export class NomenclaturesService {
   }
 
   async create(dto: CreateNomenclaturesDto) {
-    const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid: dto.guid }, raw: true });
-    await this.nomenclaturesRepository.create(dto);
-    if (!nomenclature) {
-      console.log(dto)
-    } else {
-      await this.nomenclaturesRepository.update(dto, { where: { guid: dto.guid } })
-      console.log(dto)
+    try {
+      const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid: dto.guid }, raw: true });
+      if (!nomenclature.get({plain: true})) {
+        await this.nomenclaturesRepository.create(dto);
+        console.log(dto)
+      } else {
+        await this.nomenclaturesRepository.update(dto, { where: { guid: dto.guid } })
+        console.log(dto)
+      }
+      return new HttpException({ message: "Номенклатура успешно создана" }, HttpStatus.OK)
+    } catch (e) {
+      console.log(e)
+      // throw new HttpException({ message: "Полей не хватает!" }, HttpStatus.BAD_REQUEST)
     }
-    throw new HttpException({ message: "Номенклатура успешно создана" }, HttpStatus.OK)
   }
 
   async getAll(

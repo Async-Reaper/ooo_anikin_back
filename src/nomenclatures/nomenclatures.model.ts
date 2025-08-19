@@ -7,7 +7,6 @@ interface NomenclaturesCreationAttrs {
     guid: string;
     brandGUID: string;
     groupGUID: string;
-    img: string;
     description: string;
     shortName: string;
     weight: number;
@@ -15,6 +14,8 @@ interface NomenclaturesCreationAttrs {
     expirationDate: string;
     storageConditions: string;
     isDiscount: boolean;
+    isNew: boolean;
+    is_deleted: boolean;
 }
 
 @Table({tableName: 'nomenclatures'})
@@ -58,6 +59,10 @@ export class Nomenclatures extends Model<Nomenclatures, NomenclaturesCreationAtt
     @ApiProperty({example: false, description: 'Новый товар'})
     @Column({type: DataType.BOOLEAN, allowNull: true})
     isNew: boolean;
+
+    @ApiProperty({example: false, description: 'Пометка на удаление'})
+    @Column({type: DataType.BOOLEAN, allowNull: true})
+    is_deleted: boolean;
 
     @ApiProperty({example: 500, description: 'Вес'})
     @Column({type: DataType.INTEGER, allowNull: true})

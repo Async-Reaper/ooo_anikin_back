@@ -17,6 +17,7 @@ import { NewsModule } from "./news/news.module";
 import { News } from "./news/news.model";
 import { Basket, BasketItem } from "./basket/basket.model";
 import { BasketModule } from "./basket/basket.module";
+import { Files } from "./files/files.model";
 
 @Module({
   controllers: [],
@@ -31,12 +32,20 @@ import { BasketModule } from "./basket/basket.module";
     SequelizeModule.forRoot({
       dialect: 'postgres',
       host: process.env.POSTGRES_HOST,
-      port: Number(process.env.POSTGRES_PORT),
+      port: 5432,
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [Brand, Group, News, Nomenclatures, TradePoint, Basket, BasketItem],
-      autoLoadModels: true
+      models: [Brand, Group, News, Files, Nomenclatures, TradePoint, Basket, BasketItem],
+      autoLoadModels: true,
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        }
+      },
+      ssl: false,
+      uri: `postgresql://postgress:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}.oregon-postgres.render.com/${process.env.POSTGRES_DB}`
     }),
     TradePointModule,
     FilesModule,

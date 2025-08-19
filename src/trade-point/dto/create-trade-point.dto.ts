@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString } from "class-validator";
+import { IsBoolean, IsString } from "class-validator";
 
 export class CreateTradePointDto {
   @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID торговой точки' })
@@ -21,4 +21,8 @@ export class CreateTradePointDto {
   @ApiProperty({ example: "ИП 'Кальмар'", description: 'Наименование организации' })
   @IsString({ message: 'Должно быть строкой' })
   readonly organizationName: string;
+
+  @ApiProperty({ example: false, description: 'Пометка на удаление' })
+  @IsBoolean({ message: 'Должно быть булево значение' })
+  readonly is_deleted: boolean
 }

@@ -3,6 +3,7 @@ import { JwtService } from "@nestjs/jwt";
 import { AuthDto } from "./dto/auth.dto";
 import * as process from "node:process";
 import { UserDto } from "./dto/user.dto";
+import axios from "axios";
 
 const users = [
   {
@@ -29,12 +30,18 @@ export class AuthService {
     if (user) {
       return this.generateToken(user)
     } else {
-      throw new HttpException({message: "Такого пользователя не найдено"}, HttpStatus.BAD_REQUEST)
+      throw new HttpException({ message: "Такого пользователя не найдено" }, HttpStatus.BAD_REQUEST)
     }
   }
 
 
   private async validateUser(userDto: AuthDto) {
+    const url = process.env.URL_1C + "/authorization";
+    try {
+      const response = await axios.get('');
+    } catch (e) {
+      console.log(e);
+    }
     return users.find(user => user.userName === userDto.login && user)
   }
 

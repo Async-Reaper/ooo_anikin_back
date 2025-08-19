@@ -6,6 +6,7 @@ interface BrandCreationAttrs {
   id: number;
   guid: string;
   name: string;
+  is_deleted: boolean;
 }
 
 @Table({ tableName: 'brands' })
@@ -21,6 +22,10 @@ export class Brand extends Model<Brand, BrandCreationAttrs> {
   @ApiProperty({ example: 'Лейз', description: 'Наименование бренда' })
   @Column({ type: DataType.STRING, unique: true, allowNull: false })
   name: string;
+
+  @ApiProperty({ example: false, description: 'Наименование группы' })
+  @Column({ type: DataType.BOOLEAN })
+  is_deleted: boolean;
 
   @HasMany(() => Nomenclatures)
   nomenclatures: Nomenclatures[]

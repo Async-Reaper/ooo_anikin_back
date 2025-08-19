@@ -10,16 +10,6 @@ import { Response } from "express";
 export class NomenclaturesController {
     constructor(private nomenclaturesService: NomenclaturesService) {}
 
-    @Get('/1c')
-    getData(@Headers('x-forwarded-proto') proto: string) {
-        if (proto === 'http') {
-            // Логика для HTTP-запросов (от 1С)
-            return { mode: '1C-legacy-http' };
-        }
-        // Стандартная логика
-        return { mode: 'standard-https' };
-    }
-
     @ApiOperation({summary: 'Создание номеклатуры'})
     @ApiResponse({status: 200, type: CreateNomenclaturesDto})
     // @UseInterceptors(FileInterceptor('img'))

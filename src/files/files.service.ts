@@ -1,23 +1,43 @@
-import {HttpException, HttpStatus, Injectable} from '@nestjs/common';
-import * as path from 'path'
+import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
-import * as uuid from 'uuid';
+import { CreateFileDto } from "./dto/create-file.dto";
+import { dirname } from 'node:path';
 
 @Injectable()
 export class FilesService {
 
-    async createFile(file): Promise<string> {
-        try {
-            const fileName = uuid.v4() + '.jpg';
-            const filePath = path.resolve(__dirname, '..', 'static')
-            if (!fs.existsSync(filePath)) {
-                fs.mkdirSync(filePath, {recursive: true})
-            }
-            fs.writeFileSync(path.join(filePath, fileName), file.buffer)
-            return fileName;
-        } catch (e) {
-            throw new HttpException('Произошла ошибка при записи файла', HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+  async addImage(dto: CreateFileDto) {
+    const path = `static/${dto.picture_category}/${dto.guid_object}/${dto.guid_object}.${dto.picture_type}`
+    const file = await this.createFile(dto.binary_image, path);
+    return file;
+  }
+
+  /**
+   * @param base64String - изображение в формате base:64
+   * @param outputPath - итоговый путь к изображению
+   * @return Promise<void>
+   */
+
+  async createFile(base64String, outputPath) {
+    try {
+      // Удаляем префикс (если есть)
+      const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+
+      // Создаем буфер из Base64
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+
+      const dir = dirname(outputPath);
+
+      await fs.promises.mkdir(dir, { recursive: true })
+
+      // Записываем файл
+      await fs.promises.writeFile(`${outputPath}`, imageBuffer);
+
+      console.log(`Изображение успешно сохранено: ${outputPath}`);
+    } catch (error) {
+      console.error('Ошибка при сохранении изображения:', error);
+      throw error;
     }
+  }
 
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsString } from "class-validator";
+import { IsBoolean, IsString } from "class-validator";
 
 export class CreateGroupsDto {
   @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID Группы' })
@@ -9,4 +9,8 @@ export class CreateGroupsDto {
   @ApiProperty({ example: 'Закуски', description: 'Наименование группы' })
   @IsString({ message: 'Должно быть строкой' })
   readonly name: string;
+
+  @ApiProperty({ example: false, description: 'Пометка на удаление' })
+  @IsBoolean({ message: 'Должно быть булево значение' })
+  readonly is_deleted: boolean;
 }

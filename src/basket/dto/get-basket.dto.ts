@@ -26,9 +26,6 @@ export class GetBasketItemDto {
   @ApiProperty({example: "00000-ABCDR-ab1234-00000", description: 'ID Номенклатуры'})
   readonly guid: string;
 
-  @ApiProperty({ example: 'ava.jpg', description: 'Изображение номенклатуры' })
-  readonly img: string;
-
   @ApiProperty({ example: 'Салями - это идеальный перекус для настоящих гурманов!', description: 'Описание номеклатуры' })
   readonly description: string;
 

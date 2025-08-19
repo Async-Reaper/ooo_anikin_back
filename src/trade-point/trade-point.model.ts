@@ -4,8 +4,10 @@ import { ApiProperty } from "@nestjs/swagger";
 interface TradePointCreationAttrs {
     id: number;
     name: string;
+    counterpartyGuid: string;
     counterpartyName: string;
     organizationName: string;
+    is_deleted: boolean;
 }
 
 @Table({tableName: 'trade-point'})
@@ -33,4 +35,8 @@ export class TradePoint extends Model<TradePoint, TradePointCreationAttrs> {
     @ApiProperty({example: "ИП 'Кальмар'", description: 'Наименование организации'})
     @Column({type: DataType.STRING, allowNull: false})
     organizationName: string;
+
+    @ApiProperty({example: false, description: 'Пометка на удаление'})
+    @Column({type: DataType.BOOLEAN, allowNull: true})
+    is_deleted: boolean;
 }
