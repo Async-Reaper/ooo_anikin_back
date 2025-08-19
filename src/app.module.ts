@@ -38,9 +38,9 @@ import { Files } from "./files/files.model";
       database: process.env.POSTGRES_DB,
       models: [Brand, Group, News, Files, Nomenclatures, TradePoint, Basket, BasketItem],
       autoLoadModels: true,
-      sync: {
-        alter: true,
-      },
+      // sync: {
+      //   alter: true,
+      // },
       dialectOptions: {
         ssl: {
           require: true,

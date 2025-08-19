@@ -34,7 +34,7 @@ export class AuthController {
     const userData = await this.authService.searchUser(refreshData.userGUID) as UserDto
 
 
-    const newAccessToken = this.jwtService.sign({ userGUID: userData.userGUID, userName: userData.userName, debts: userData.debts }, {
+    const newAccessToken = this.jwtService.sign({ userGUID: userData.userGUID, userName: userData.userName }, {
       secret: process.env.JWT_SECRET_ACCESS,
       expiresIn: '30m',
     });

@@ -47,9 +47,15 @@ export class NomenclaturesController {
 
     @ApiOperation({summary: 'Получение номенклатуры по id'})
     @ApiResponse({status: 200, type: GetNomenclaturesDto})
-    @Get('/:guid')
-    getOne(@Param('guid') guid: string, @Req() request: Request) {
-        return this.nomenclaturesService.getOne(guid, request);
+    @ApiQuery({ name: 'guid', required: false, type: String })
+    @ApiQuery({ name: 'contractGuid', required: false, type: String })
+    @Get()
+    getOne(
+      @Query('guid') guid: string,
+      @Query('contractGuid') contractGuid: string,
+      @Req() request: Request
+    ) {
+        return this.nomenclaturesService.getOne(guid, contractGuid, request);
     }
 
     @ApiOperation({summary: 'Удаление номенклатуры'})

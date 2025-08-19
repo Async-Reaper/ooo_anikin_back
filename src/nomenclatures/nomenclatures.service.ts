@@ -7,84 +7,18 @@ import { Op, WhereOptions } from "sequelize";
 import { UserDto } from "../auth/dto/user.dto";
 import { JwtService } from "@nestjs/jwt";
 import { Response } from "express";
+import axios from "axios";
+import process from "node:process";
 
-const tradePoints = [
-  {
-    guid: "00000-ABCDR-ab1234-00000",
-    nomenclatures: [
-      {
-        guid: "00000-ASDASA-ab1234-00000",
-        price: 13454,
-        remains: 3
-      },
-      {
-        guid: "00000-casas-ab1234-00000",
-        price: 134,
-        remains: 3
-      }
-    ]
-  },
-  {
-    guid: "00000-dfsgs-ab1234-00000",
-    nomenclatures: [
-      {
-        guid: "asdfasf-casas-ab1234-00000",
-        price: 3421,
-        remains: 3
-      },
-      {
-        guid: "00000-AaBCsdDR-ab1234-00000",
-        price: 1234,
-        remains: 3
-      },
-      {
-        guid: "00000-ABCDR-ab1234-00000",
-        price: 2345,
-        oldPrice: 3245,
-        remains: 3
-      },
-      {
-        guid: "00000-sadfABCDR-ab1234-00000",
-        price: 4235,
-        oldPrice: 6341,
-        remains: 3
-      }
-    ]
-  },
-]
-
-const nomenclaturesAdditional = [
-  {
-    guid: "asdfasf-casas-ab1234-00000",
-    info: {
-      price: 23,
-      remains: 3
-    },
-  },
-  {
-    guid: "00000-AaBCsdDR-ab1234-00000",
-    info: {
-      price: 441,
-      remains: 3
-    }
-  },
-  {
-    guid: "00000-ABCDR-ab1234-00000",
-    info: {
-      price: 1234,
-      oldPrice: 2411,
-      remains: 3
-    }
-  },
-  {
-    guid: "00000-sadfABCDR-ab1234-00000",
-    info: {
-      price: 432,
-      oldPrice: 1200,
-      remains: 3
-    }
-  }
-]
+interface ProductAdditionalInfo {
+  product_guid: string,
+  remains: number;
+  weight: number;
+  price: number;
+  discount: number;
+  priceWithoutDiscount: number;
+  discountAvailable: boolean
+}
 
 @Injectable()
 export class NomenclaturesService {
@@ -96,7 +30,7 @@ export class NomenclaturesService {
   async create(dto: CreateNomenclaturesDto) {
     try {
       const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid: dto.guid }, raw: true });
-      if (!nomenclature.get({plain: true})) {
+      if (!nomenclature.get({ plain: true })) {
         await this.nomenclaturesRepository.create(dto);
         console.log(dto)
       } else {
@@ -105,8 +39,7 @@ export class NomenclaturesService {
       }
       return new HttpException({ message: "Номенклатура успешно создана" }, HttpStatus.OK)
     } catch (e) {
-      console.log(e)
-      // throw new HttpException({ message: "Полей не хватает!" }, HttpStatus.BAD_REQUEST)
+      throw new HttpException({ message: e.message }, HttpStatus.BAD_REQUEST)
     }
   }
 
@@ -137,7 +70,7 @@ export class NomenclaturesService {
 
     isNew && (where.isNew = isNew);
 
-    const nomenclaturesFromDb = await this.nomenclaturesRepository.findAll({
+    const nomenclatures = await this.nomenclaturesRepository.findAll({
       limit: limit,
       offset: (page - 1) * limit,
       where
@@ -149,62 +82,52 @@ export class NomenclaturesService {
     response.header('Access-Control-Expose-Headers', 'X-Total-Count');
 
     if (tradePoint && token) {
-      const tradePointProducts = tradePoints.find(tradePointItem => tradePointItem.guid === tradePoint).nomenclatures
+      const nomenclaturesGuid: string[] = nomenclatures.map(nomenclature => nomenclature.guid);
+      const productPrices: ProductAdditionalInfo[] = [];
+      // const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
 
-
-      const nomenclaturesForTradePoint = await this.nomenclaturesRepository.findAll({
-        limit: limit,
-        offset: (page - 1) * limit,
-        where: {
-          ...where,
-          guid: { [Op.in]: (tradePointProducts.map(product => product.guid)) }
-        }
-      });
-      const totalCountWithTradePoint = await this.nomenclaturesRepository.count({
-        where:
-          {
-            ...where,
-            guid: { [Op.in]: (tradePointProducts.map(product => product.guid)) }
-          }
-      });
-
-      const result: GetNomenclaturesDto[] = tradePointProducts.map(tradePoint => {
-        const nomenclature = nomenclaturesForTradePoint.find(
-          nomenclature => nomenclature.get({ plain: true }).guid === tradePoint.guid
-        );
-
-        if (inStock) {
-          return tradePoint.remains > 0
-            && (nomenclature && {
-              ...nomenclature.get({ plain: true }),
-              additionalInfo: {
-                price: tradePoint.price,
-                oldPrice: tradePoint.oldPrice,
-                remains: tradePoint.remains
-              }
-            })
-        }
-
-        return nomenclature && {
-          ...nomenclature.get({ plain: true }),
-          additionalInfo: {
-            price: tradePoint.price,
-            oldPrice: tradePoint.oldPrice,
-            remains: tradePoint.remains
-          }
-        };
+      const resultConcat = nomenclatures.map(nomenclature => {
+        const price = productPrices.find((productPrice) => nomenclature.guid === productPrice.product_guid)
+        return price
       })
-        .filter(Boolean) as GetNomenclaturesDto[];
 
-      response.header('X-Total-Count', totalCountWithTradePoint.toString());
-      return result
+      console.log(resultConcat);
+
+      // const result: GetNomenclaturesDto[] = productPrices.map(productPrice => {
+      //   const nomenclature = nomenclatures.find(
+      //     nomenclature => nomenclature.get({ plain: true }).guid === productPrice
+      //   );
+      //
+      //   if (inStock) {
+      //     return productPrice.remains > 0
+      //       && (nomenclature && {
+      //         ...nomenclature.get({ plain: true }),
+      //         additionalInfo: {
+      //           price: productPrice.price,
+      //           oldPrice: productPrice.oldPrice,
+      //           remains: productPrice.remains
+      //         }
+      //       })
+      //   }
+      //
+      //   return nomenclature && {
+      //     ...nomenclature.get({ plain: true }),
+      //     additionalInfo: {
+      //       price: productPrice.price,
+      //       oldPrice: productPrice.oldPrice,
+      //       remains: productPrice.remains
+      //     }
+      //   };
+      // })
+      //   .filter(Boolean) as GetNomenclaturesDto[];
+      // return result
     }
 
-    return nomenclaturesFromDb
+    return nomenclatures
   }
 
 
-  async getOne(guid: string, request: Request) {
+  async getOne(guid: string, contractGuid: string, request: Request) {
     const token = request.headers['authorization'];
     const { userGUID }: UserDto = this.jwtService.decode(token);
 
@@ -212,11 +135,19 @@ export class NomenclaturesService {
 
     if (!userGUID) return nomenclature;
 
-    const additionalInfo = nomenclaturesAdditional.find(add => add.guid === nomenclature.guid).info
+    const {
+      price,
+      remains,
+      priceWithoutDiscount
+    }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid);
 
     return {
       ...nomenclature,
-      additionalInfo
+      additionalInfo: {
+        price: priceWithoutDiscount >= price ? price : priceWithoutDiscount,
+        oldPrice: priceWithoutDiscount >= price && price,
+        remains: remains
+      }
     } as GetNomenclaturesDto
   }
 
@@ -224,5 +155,20 @@ export class NomenclaturesService {
     await this.nomenclaturesRepository.destroy({ where: { guid } })
 
     return { message: "Номеклатура удалена." }
+  }
+
+  /**
+   * @param guid гуид товара, может быть несколько значений
+   * @param contractGUID гуид торговой точки
+   */
+  async getAdditionalInfo(guid: string | string[], contractGUID: string) {
+    // const url = process.env.URL_1C + "/nomenclatures/currentData";
+    const url = "http://192.168.1.95/ut_test_copy/hs/api_v2/nomenclatures/currentData";
+    const response = await axios.post(url, {
+      productItems: guid,
+      contractGUID: contractGUID
+    })
+
+    return response.data;
   }
 }

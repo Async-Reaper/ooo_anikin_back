@@ -47,6 +47,7 @@ export class BasketService {
 
   async getAll(tradePointGUID: string, request: Request) {
     const token = request.headers['authorization'];
+    console.log(token)
     const { userGUID }: UserDto = this.jwtService.decode(token);
 
     try {
@@ -61,7 +62,7 @@ export class BasketService {
       const productsWithPrices = await Promise.all(
         basketItems.map(async (item) => {
           try {
-            const nomenclature: GetNomenclaturesDto = await this.nomenclatureService.getOne(item.nomenclatureGUID, request);
+            const nomenclature: GetNomenclaturesDto = await this.nomenclatureService.getOne(item.nomenclatureGUID, tradePointGUID, request);
             if (!nomenclature) {
               console.warn(`Товар ${item.nomenclatureGUID} не найден`);
               return null;

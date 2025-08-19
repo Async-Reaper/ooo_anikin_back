@@ -26,7 +26,7 @@ export class AuthService {
 
   async login(userDto: AuthDto) {
     const user = await this.validateUser(userDto);
-
+    console.log(user)
     if (user) {
       return this.generateToken(user)
     } else {
@@ -38,11 +38,12 @@ export class AuthService {
   private async validateUser(userDto: AuthDto) {
     const url = process.env.URL_1C + "/authorization";
     try {
-      const response = await axios.get('');
+      const response = await axios.post(url, {login: userDto.login, password: userDto.password});
+      console.log(response.data)
+      return response.data;
     } catch (e) {
-      console.log(e);
+      throw new HttpException({ message: "Произошла ошибка" }, HttpStatus.BAD_REQUEST)
     }
-    return users.find(user => user.userName === userDto.login && user)
   }
 
   async searchUser(userGUID: string) {
@@ -52,7 +53,7 @@ export class AuthService {
   private async generateToken(user: UserDto) {
     const payload = user;
     const access_token = this.jwtService.sign(
-      { userGUID: payload.userGUID, userName: payload.userName, debts: payload.debts },
+      { userGUID: payload.userGUID, userName: payload.userName },
       {
         secret: process.env.JWT_SECRET_ACCESS,
         expiresIn: '30m'
