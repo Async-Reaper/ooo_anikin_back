@@ -2,7 +2,7 @@ import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { ApiProperty } from "@nestjs/swagger";
 
 interface TradePointCreationAttrs {
-    id: number;
+    guid: string;
     name: string;
     counterpartyGuid: string;
     counterpartyName: string;
@@ -12,9 +12,6 @@ interface TradePointCreationAttrs {
 
 @Table({tableName: 'trade-point'})
 export class TradePoint extends Model<TradePoint, TradePointCreationAttrs> {
-    @ApiProperty({ example: 32, description: 'ID тfорговой точки' })
-    @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true })
-    declare id: number;
 
     @ApiProperty({ example: "00000-ABCDR-ab1234-00000", description: 'GUID торговой точки' })
     @Column({ type: DataType.STRING, unique: true, primaryKey: true })

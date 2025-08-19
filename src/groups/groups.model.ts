@@ -3,7 +3,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Nomenclatures } from "../nomenclatures/nomenclatures.model";
 
 interface GroupCreationAttrs {
-  id: number;
   guid: string;
   name: string;
   is_deleted: boolean;
@@ -11,9 +10,6 @@ interface GroupCreationAttrs {
 
 @Table({ tableName: 'groups' })
 export class Group extends Model<Group, GroupCreationAttrs> {
-  @ApiProperty({ example: 32, description: 'ID Группы' })
-  @Column({ type: DataType.INTEGER, unique: true, autoIncrement: true })
-  declare id: number;
 
   @ApiProperty({ example: "00000-аABCDR-ab1234-00000", description: 'GUID Группы' })
   @Column({ type: DataType.STRING, unique: true, primaryKey: true })
