@@ -27,8 +27,10 @@ export class TradePointController {
     @ApiOperation({summary: 'Получение всех торговых точек'})
     @ApiResponse({status: 200, type: TradePoint})
     @Get()
-    getAll() {
-        return this.tradePointService.getAll();
+    getAll(
+      @Req() request: Request
+    ) {
+        return this.tradePointService.getAll(request);
     }
 
     @ApiOperation({summary: 'Получение торговой точки'})

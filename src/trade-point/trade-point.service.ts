@@ -3,6 +3,7 @@ import {InjectModel} from "@nestjs/sequelize";
 import {TradePoint} from "./trade-point.model";
 import {JwtService} from "@nestjs/jwt";
 import { CreateTradePointDto } from "./dto/create-trade-point.dto";
+import { UserDto } from "../auth/dto/user.dto";
 
 @Injectable()
 export class TradePointService {
@@ -19,7 +20,10 @@ export class TradePointService {
         return tradePoint
     }
 
-    async getAll() {
+    async getAll(request: Request) {
+        const token = request.headers['authorization'];
+        const { userGUID }: UserDto = this.jwtService.decode(token);
+        // const tradePoint = await this.tradePointRepository.findAll({where: {counterpartyGuid: userGUID}});
         const tradePoint = await this.tradePointRepository.findAll();
         return tradePoint
     }

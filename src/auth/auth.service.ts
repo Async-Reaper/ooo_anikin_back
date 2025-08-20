@@ -36,10 +36,14 @@ export class AuthService {
 
 
   private async validateUser(userDto: AuthDto) {
-    const url = process.env.URL_1C + "/authorization";
+    const url = "http://192.168.1.95/ut_test_copy/hs/api_v2/authorization";
+
     try {
-      const response = await axios.post(url, {login: userDto.login, password: userDto.password});
-      console.log(response.data)
+      const response = await axios.post(url,
+        { login: userDto.login, password: userDto.password }
+      );
+
+
       return response.data;
     } catch (e) {
       throw new HttpException({ message: "Произошла ошибка" }, HttpStatus.BAD_REQUEST)
@@ -83,6 +87,7 @@ export class AuthService {
       return new HttpException({ message: "Пользователь не авторизован" }, HttpStatus.UNAUTHORIZED)
     }
     const userInfo = this.jwtService.decode(token)
+    console.log(token)
     return userInfo;
   }
 }

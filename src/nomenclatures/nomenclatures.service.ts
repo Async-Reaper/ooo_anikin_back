@@ -6,7 +6,7 @@ import { GetNomenclaturesDto } from "./dto/get-nomenclatures.dto";
 import { Op, WhereOptions } from "sequelize";
 import { UserDto } from "../auth/dto/user.dto";
 import { JwtService } from "@nestjs/jwt";
-import { Response } from "express";
+import { raw, Response } from "express";
 import axios from "axios";
 import process from "node:process";
 
@@ -73,7 +73,8 @@ export class NomenclaturesService {
     const nomenclatures = await this.nomenclaturesRepository.findAll({
       limit: limit,
       offset: (page - 1) * limit,
-      where
+      where,
+      raw: true
     });
 
     const totalCount = await this.nomenclaturesRepository.count({ where });
@@ -83,44 +84,37 @@ export class NomenclaturesService {
 
     if (tradePoint && token) {
       const nomenclaturesGuid: string[] = nomenclatures.map(nomenclature => nomenclature.guid);
-      const productPrices: ProductAdditionalInfo[] = [];
-      // const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
 
-      const resultConcat = nomenclatures.map(nomenclature => {
-        const price = productPrices.find((productPrice) => nomenclature.guid === productPrice.product_guid)
-        return price
+      const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
+
+      const result: GetNomenclaturesDto[] = productPrices.map(productPrice => {
+        const nomenclature = nomenclatures.find(
+          nomenclature => nomenclature.guid === productPrice.product_guid
+        );
+
+        if (inStock) {
+          return productPrice.remains > 0
+            && (nomenclature && {
+              ...nomenclature,
+              additionalInfo: {
+                price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
+                oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
+                remains: productPrice.remains
+              }
+            })
+        }
+
+        return nomenclature && {
+          ...nomenclature,
+          additionalInfo: {
+            price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
+            oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
+            remains: productPrice.remains
+          }
+        };
       })
-
-      console.log(resultConcat);
-
-      // const result: GetNomenclaturesDto[] = productPrices.map(productPrice => {
-      //   const nomenclature = nomenclatures.find(
-      //     nomenclature => nomenclature.get({ plain: true }).guid === productPrice
-      //   );
-      //
-      //   if (inStock) {
-      //     return productPrice.remains > 0
-      //       && (nomenclature && {
-      //         ...nomenclature.get({ plain: true }),
-      //         additionalInfo: {
-      //           price: productPrice.price,
-      //           oldPrice: productPrice.oldPrice,
-      //           remains: productPrice.remains
-      //         }
-      //       })
-      //   }
-      //
-      //   return nomenclature && {
-      //     ...nomenclature.get({ plain: true }),
-      //     additionalInfo: {
-      //       price: productPrice.price,
-      //       oldPrice: productPrice.oldPrice,
-      //       remains: productPrice.remains
-      //     }
-      //   };
-      // })
-      //   .filter(Boolean) as GetNomenclaturesDto[];
-      // return result
+        .filter(Boolean) as GetNomenclaturesDto[];
+      return result
     }
 
     return nomenclatures
@@ -170,5 +164,6 @@ export class NomenclaturesService {
     })
 
     return response.data;
+    // return [];
   }
 }

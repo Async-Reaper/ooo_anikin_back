@@ -49,7 +49,7 @@ export class NomenclaturesController {
     @ApiResponse({status: 200, type: GetNomenclaturesDto})
     @ApiQuery({ name: 'guid', required: false, type: String })
     @ApiQuery({ name: 'contractGuid', required: false, type: String })
-    @Get()
+    @Get('/:guid')
     getOne(
       @Query('guid') guid: string,
       @Query('contractGuid') contractGuid: string,
