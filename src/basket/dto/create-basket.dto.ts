@@ -10,6 +10,7 @@ export class CreateBasketDto {
   @IsString({ message: 'Должно быть строкой' })
   readonly address: string;
 
+  @ApiProperty({ example: [], description: 'Адрес доставки' })
   readonly items: CreateBasketItemDto[]
 }
 

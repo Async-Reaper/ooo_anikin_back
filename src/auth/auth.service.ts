@@ -50,10 +50,6 @@ export class AuthService {
     }
   }
 
-  async searchUser(userGUID: string) {
-    return users.find(user => user.userGUID === userGUID && user)
-  }
-
   private async generateToken(user: UserDto) {
     const payload = user;
     const access_token = this.jwtService.sign(
@@ -67,6 +63,7 @@ export class AuthService {
     const refresh_token = this.jwtService.sign(
       {
         userGUID: payload.userGUID,
+        userName: payload.userName
       },
       {
         secret: process.env.JWT_SECRET_REFRESH,
@@ -87,7 +84,7 @@ export class AuthService {
       return new HttpException({ message: "Пользователь не авторизован" }, HttpStatus.UNAUTHORIZED)
     }
     const userInfo = this.jwtService.decode(token)
-    console.log(token)
+
     return userInfo;
   }
 }

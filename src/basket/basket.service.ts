@@ -24,12 +24,13 @@ export class BasketService {
     const { userGUID }: UserDto = this.jwtService.decode(token);
 
     try {
-      await this.basketRepository.create({
+      const basket = await this.basketRepository.create({
         userGUID: userGUID,
         address: basketDto.address,
-        tradePointGUID: basketDto.tradePointGUID
+        tradePointGUID: basketDto.tradePointGUID,
+        items: []
       })
-      return { message: "Корзина успешно создана" }
+      return basket;
     } catch (e) {
       throw new HttpException({ message: "Произошла ошибка", details: e.message }, HttpStatus.BAD_REQUEST)
     }
@@ -47,14 +48,13 @@ export class BasketService {
 
   async getAll(tradePointGUID: string, request: Request) {
     const token = request.headers['authorization'];
-    console.log(token)
     const { userGUID }: UserDto = this.jwtService.decode(token);
 
     try {
       const basket = await this.basketRepository.findOne({ where: { userGUID, tradePointGUID }, raw: true });
 
       if (!basket) {
-        return new HttpException({ message: "Корзины не обнаружено" }, HttpStatus.BAD_REQUEST)
+        throw new HttpException({ message: "Корзины не обнаружено" }, HttpStatus.BAD_REQUEST)
       }
       const basketItems = await this.basketItemRepository.findAll({ where: { basketId: basket.id }, raw: true })
 
