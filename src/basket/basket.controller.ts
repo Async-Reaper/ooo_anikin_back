@@ -52,18 +52,27 @@ export class BasketController {
 
     @ApiOperation({summary: 'Добавление товара в корзину'})
     @ApiResponse({status: 200, type: "Товар добавлен"})
-    @Post('/:basketId/product')
+    @Post('/:tradePointGUID/product')
     @UseGuards(JwtAuthGuard)
-    addToBasket(@Param('basketId') basketId: number, @Body() basketDto: CreateBasketItemDto) {
-        return this.basketService.addProductToBasket(basketId, basketDto);
+    addToBasket(
+      @Param('tradePointGUID') basketId: number,
+      @Req() request: Request,
+      @Body() basketDto: CreateBasketItemDto
+    ) {
+        return this.basketService.addProductToBasket(basketId, request, basketDto);
     }
 
+    //добработать для того, чтобы можно было редактировать из вне с указанием корзины
     @ApiOperation({summary: 'Редактирование товара в корзине'})
     @ApiResponse({status: 200, type: CreateBasketDto})
-    @Put('/product/:productId')
+    @Put(':basketId/product/:nomenclatureGUID')
     @UseGuards(JwtAuthGuard)
-    updateProduct(@Param('productId') productId: number, @Body() updateBasketItemDto: UpdateBasketItemDto) {
-        return this.basketService.updateBasketItem(productId, updateBasketItemDto);
+    updateProduct(
+      @Param('basketId') basketId: number,
+      @Param('nomenclatureGUID') nomenclatureGUID: string,
+      @Body() updateBasketItemDto: UpdateBasketItemDto
+    ) {
+        return this.basketService.updateBasketItem(basketId, nomenclatureGUID, updateBasketItemDto);
     }
 
     @ApiOperation({summary: 'Удаление всех товаров из корзины'})

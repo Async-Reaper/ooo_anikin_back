@@ -130,9 +130,12 @@ export class BasketService {
     }
   }
 
-  async addProductToBasket(id: number, basketDto: CreateBasketItemDto) {
+  async addProductToBasket(tradePointGUID: number, request: Request, basketDto: CreateBasketItemDto) {
+    const token = request.headers['authorization'];
+    const { userGUID }: UserDto = this.jwtService.decode(token);
+
     try {
-      const basket = await this.basketRepository.findOne({ where: { id } })
+      const basket = await this.basketRepository.findOne({ where: { tradePointGUID, userGUID } })
 
       if (!basket) {
         return new HttpException("Корзина не найдена", HttpStatus.BAD_REQUEST, undefined)
@@ -145,14 +148,14 @@ export class BasketService {
     }
   }
 
-  async updateBasketItem(id: number, updateBasketItemDto: UpdateBasketItemDto) {
+  async updateBasketItem(basketId: number, nomenclatureGUID: string, updateBasketItemDto: UpdateBasketItemDto) {
 
     try {
       if (updateBasketItemDto.count === 0) {
-        await this.basketItemRepository.destroy({ where: { id } })
+        await this.basketItemRepository.destroy({ where: { basketId, nomenclatureGUID } })
         return new HttpException({ message: "Товар удален" }, HttpStatus.OK)
       } else {
-        await this.basketItemRepository.update({ ...updateBasketItemDto }, { where: { id } });
+        await this.basketItemRepository.update({ ...updateBasketItemDto }, { where: { basketId, nomenclatureGUID } });
       }
 
       return { message: "Данные товара обновлены" }
