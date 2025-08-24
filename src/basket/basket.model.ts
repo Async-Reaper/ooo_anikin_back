@@ -51,7 +51,7 @@ export class BasketItem extends Model<BasketItem, BasketItemCreationAttrs> {
 
   @ForeignKey(() => Basket)
   @ApiProperty({ description: 'ID Родительской сущности корзины' })
-  @Column({ type: DataType.INTEGER, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false, autoIncrement: false })
   basketId: number;
 
   @ForeignKey(() => Nomenclatures)

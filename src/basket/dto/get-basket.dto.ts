@@ -19,6 +19,10 @@ export class GetBasketDto {
 
 export class GetBasketItemDto {
 
+  @ApiProperty({ example: 1, description: 'ID товара' })
+  @IsInt({ message: 'Должно быть числом' })
+  readonly id?: number;
+
   @ApiProperty({ example: 2, description: 'Количество товара' })
   @IsInt({ message: 'Должно быть числом' })
   readonly count: number;

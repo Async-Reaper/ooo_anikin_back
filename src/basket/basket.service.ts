@@ -6,7 +6,7 @@ import { JwtService } from "@nestjs/jwt";
 import { UserDto } from "../auth/dto/user.dto";
 import { UpdateBasketDto, UpdateBasketItemDto } from "./dto/update-basket.dto";
 import { NomenclaturesService } from "../nomenclatures/nomenclatures.service";
-import { GetBasketDto } from "./dto/get-basket.dto";
+import { GetBasketDto, GetBasketItemDto } from "./dto/get-basket.dto";
 import { GetNomenclaturesDto } from "../nomenclatures/dto/get-nomenclatures.dto";
 
 
@@ -70,7 +70,8 @@ export class BasketService {
 
             return {
               ...nomenclature,
-              basketId: item.id,
+              id: item.id,
+              basketId: basket.id,
               count: item.count,
             };
           } catch (error) {
@@ -78,7 +79,7 @@ export class BasketService {
             return null;
           }
         })
-      );
+      ) as GetBasketItemDto[];
 
       // Возврат пустого значения, в случае если товар с передаваемым guid не найден
       const validProducts = productsWithPrices.filter(product => product !== null);
@@ -91,6 +92,11 @@ export class BasketService {
     } catch (e) {
       throw new HttpException({ message: "Произошла ошибка", details: e.message }, HttpStatus.BAD_REQUEST)
     }
+  }
+
+  async getOne(basketId: number, nomenclatureGUID: string, request: Request) {
+    const nomenclature = await this.basketItemRepository.findOne({where: {basketId, nomenclatureGUID}});
+    return nomenclature;
   }
 
   async deleteBasket(id: number) {
@@ -135,7 +141,7 @@ export class BasketService {
     const { userGUID }: UserDto = this.jwtService.decode(token);
 
     try {
-      const basket = await this.basketRepository.findOne({ where: { tradePointGUID, userGUID } })
+      const basket = await this.basketRepository.findOne({ where: { tradePointGUID, userGUID,  } })
 
       if (!basket) {
         return new HttpException("Корзина не найдена", HttpStatus.BAD_REQUEST, undefined)

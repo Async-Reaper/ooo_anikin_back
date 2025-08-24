@@ -85,31 +85,38 @@ export class NomenclaturesService {
     if (tradePoint && token) {
       const nomenclaturesGuid: string[] = nomenclatures.map(nomenclature => nomenclature.guid);
 
-      const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
+      // const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
+      const productPrices: ProductAdditionalInfo[] = [];
 
-      const result: GetNomenclaturesDto[] = productPrices.map(productPrice => {
-        const nomenclature = nomenclatures.find(
-          nomenclature => nomenclature.guid === productPrice.product_guid
-        );
+      const result: GetNomenclaturesDto[] = nomenclatures.map(productPrice => {
+        // const nomenclature = nomenclatures.find(
+        //   nomenclature => nomenclature.guid === productPrice.product_guid
+        // );
+        // const nomenclature = nomenclatures.find(
+        //   nomenclature => nomenclature.guid !== ""
+        // );
 
-        if (inStock) {
-          return productPrice.remains > 0
-            && (nomenclature && {
-              ...nomenclature,
-              additionalInfo: {
-                price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
-                oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
-                remains: productPrice.remains
-              }
-            })
-        }
+        // if (inStock) {
+        //   return productPrice.remains > 0
+        //     && (nomenclature && {
+        //       ...nomenclature,
+        //       additionalInfo: {
+        //         price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
+        //         oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
+        //         remains: productPrice.remains
+        //       }
+        //     })
+        // }
 
-        return nomenclature && {
-          ...nomenclature,
+        return productPrice && {
+          ...productPrice,
           additionalInfo: {
-            price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
-            oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
-            remains: productPrice.remains
+            // price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
+            // oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
+            // remains: productPrice.remains
+            price: 4562,
+            oldPrice: 4562,
+            remains: 4562,
           }
         };
       })
@@ -129,18 +136,21 @@ export class NomenclaturesService {
 
     if (!userGUID) return nomenclature;
 
-    const {
-      price,
-      remains,
-      priceWithoutDiscount
-    }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid);
+    // const {
+    //   price,
+    //   remains,
+    //   priceWithoutDiscount
+    // }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid);
 
     return {
       ...nomenclature,
       additionalInfo: {
-        price: priceWithoutDiscount >= price ? price : priceWithoutDiscount,
-        oldPrice: priceWithoutDiscount >= price && price,
-        remains: remains
+        // price: priceWithoutDiscount >= price ? price : priceWithoutDiscount,
+        // oldPrice: priceWithoutDiscount >= price && price,
+        // remains: remains
+        price: 43242,
+        oldPrice: 43242,
+        remains: 43242,
       }
     } as GetNomenclaturesDto
   }

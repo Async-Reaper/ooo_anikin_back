@@ -4,7 +4,7 @@ import { BasketService } from "./basket.service";
 import { CreateBasketDto, CreateBasketItemDto } from "./dto/create-basket.dto";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { UpdateBasketDto, UpdateBasketItemDto } from "./dto/update-basket.dto";
-import { GetBasketDto } from "./dto/get-basket.dto";
+import { GetBasketDto, GetBasketItemDto } from "./dto/get-basket.dto";
 
 
 @ApiTags('Корзина')
@@ -32,6 +32,18 @@ export class BasketController {
         return this.basketService.getAll(tradePointGUID, request);
     }
 
+    @ApiOperation({summary: 'Получение одного товаров в корзине'})
+    @ApiResponse({status: 200, type: GetBasketItemDto})
+    @Get('/:basketId/product/:nomenclatureGUID')
+    @UseGuards(JwtAuthGuard)
+    getOne(
+      @Param('basketId') basketId: number,
+      @Param('nomenclatureGUID') nomenclatureGUID: string,
+      @Req() request: Request
+    ) {
+        return this.basketService.getOne(basketId, nomenclatureGUID, request);
+    }
+
     @ApiOperation({summary: 'Редактирование информации о корзине'})
     @ApiResponse({status: 200, type: CreateBasketDto})
     @Put('/:id')
@@ -55,11 +67,11 @@ export class BasketController {
     @Post('/:tradePointGUID/product')
     @UseGuards(JwtAuthGuard)
     addToBasket(
-      @Param('tradePointGUID') basketId: number,
+      @Param('tradePointGUID') tradePointGUID: number,
       @Req() request: Request,
       @Body() basketDto: CreateBasketItemDto
     ) {
-        return this.basketService.addProductToBasket(basketId, request, basketDto);
+        return this.basketService.addProductToBasket(tradePointGUID, request, basketDto);
     }
 
     //добработать для того, чтобы можно было редактировать из вне с указанием корзины
