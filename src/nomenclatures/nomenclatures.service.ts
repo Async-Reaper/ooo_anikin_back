@@ -29,7 +29,7 @@ export class NomenclaturesService {
 
   async create(dto: CreateNomenclaturesDto) {
     try {
-      const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid: dto.guid }, raw: true });
+      const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid: dto.guid, is_deleted: false }, raw: true });
       if (!nomenclature.get({ plain: true })) {
         await this.nomenclaturesRepository.create(dto);
         console.log(dto)
@@ -73,7 +73,10 @@ export class NomenclaturesService {
     const nomenclatures = await this.nomenclaturesRepository.findAll({
       limit: limit,
       offset: (page - 1) * limit,
-      where,
+      where: {
+        ...where,
+        // is_deleted: false
+      },
       raw: true
     });
 
@@ -85,38 +88,31 @@ export class NomenclaturesService {
     if (tradePoint && token) {
       const nomenclaturesGuid: string[] = nomenclatures.map(nomenclature => nomenclature.guid);
 
-      // const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
-      const productPrices: ProductAdditionalInfo[] = [];
+      const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
 
-      const result: GetNomenclaturesDto[] = nomenclatures.map(productPrice => {
-        // const nomenclature = nomenclatures.find(
-        //   nomenclature => nomenclature.guid === productPrice.product_guid
-        // );
-        // const nomenclature = nomenclatures.find(
-        //   nomenclature => nomenclature.guid !== ""
-        // );
+      const result: GetNomenclaturesDto[] = productPrices.map(productPrice => {
+        const nomenclature = nomenclatures.find(
+          nomenclature => nomenclature.guid === productPrice.product_guid
+        );
 
-        // if (inStock) {
-        //   return productPrice.remains > 0
-        //     && (nomenclature && {
-        //       ...nomenclature,
-        //       additionalInfo: {
-        //         price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
-        //         oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
-        //         remains: productPrice.remains
-        //       }
-        //     })
-        // }
+        if (inStock) {
+          return productPrice.remains > 0
+            && (nomenclature && {
+              ...nomenclature,
+              additionalInfo: {
+                price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
+                oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
+                remains: productPrice.remains
+              }
+            })
+        }
 
-        return productPrice && {
-          ...productPrice,
+        return nomenclature && {
+          ...nomenclature,
           additionalInfo: {
-            // price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
-            // oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
-            // remains: productPrice.remains
-            price: 4562,
-            oldPrice: 4562,
-            remains: 4562,
+            price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
+            oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
+            remains: productPrice.remains
           }
         };
       })
@@ -136,21 +132,21 @@ export class NomenclaturesService {
 
     if (!userGUID) return nomenclature;
 
-    // const {
-    //   price,
-    //   remains,
-    //   priceWithoutDiscount
-    // }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid);
+    const {
+      price,
+      remains,
+      priceWithoutDiscount
+    }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid);
 
     return {
       ...nomenclature,
       additionalInfo: {
-        // price: priceWithoutDiscount >= price ? price : priceWithoutDiscount,
-        // oldPrice: priceWithoutDiscount >= price && price,
-        // remains: remains
-        price: 43242,
-        oldPrice: 43242,
-        remains: 43242,
+        price: priceWithoutDiscount >= price ? price : priceWithoutDiscount,
+        oldPrice: priceWithoutDiscount >= price && price,
+        remains: remains
+        // price: 43242,
+        // oldPrice: 43242,
+        // remains: 43242,
       }
     } as GetNomenclaturesDto
   }
@@ -172,7 +168,7 @@ export class NomenclaturesService {
       productItems: guid,
       contractGUID: contractGUID
     })
-
+    console.log(response)
     return response.data;
     // return [];
   }

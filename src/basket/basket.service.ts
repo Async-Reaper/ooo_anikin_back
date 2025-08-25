@@ -95,7 +95,7 @@ export class BasketService {
   }
 
   async getOne(basketId: number, nomenclatureGUID: string, request: Request) {
-    const nomenclature = await this.basketItemRepository.findOne({where: {basketId, nomenclatureGUID}});
+    const nomenclature = await this.basketItemRepository.findOne({ where: { basketId, nomenclatureGUID } });
     return nomenclature;
   }
 
@@ -141,7 +141,7 @@ export class BasketService {
     const { userGUID }: UserDto = this.jwtService.decode(token);
 
     try {
-      const basket = await this.basketRepository.findOne({ where: { tradePointGUID, userGUID,  } })
+      const basket = await this.basketRepository.findOne({ where: { tradePointGUID, userGUID, } })
 
       if (!basket) {
         return new HttpException("Корзина не найдена", HttpStatus.BAD_REQUEST, undefined)
@@ -192,6 +192,10 @@ export class BasketService {
 
       if (!basket) {
         return new HttpException("Корзина не найдена", HttpStatus.BAD_REQUEST, undefined)
+      }
+
+      if (basket) {
+        await this.basketItemRepository.destroy({ where: { basketId: id } })
       }
       const responseFetchOrder = await this.fetchDataOrder(basket);
 

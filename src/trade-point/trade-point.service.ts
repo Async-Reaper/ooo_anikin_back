@@ -13,7 +13,7 @@ export class TradePointService {
     }
 
     async get(id: number) {
-        const tradePoint = await this.tradePointRepository.findOne({where: {id}});
+        const tradePoint = await this.tradePointRepository.findOne({where: {id, is_deleted: false}});
         if (!tradePoint) {
             throw new HttpException({message: `Торговой точки с id=${id} не найдено`}, HttpStatus.BAD_REQUEST)
         }

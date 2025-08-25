@@ -24,12 +24,12 @@ export class BrandService {
     }
 
     async getAll() {
-        const brand = await this.brandRepository.findAll();
+        const brand = await this.brandRepository.findAll({where: {is_deleted: false}});
         return brand;
     }
 
     async getOne(id: number) {
-        const brand = await this.brandRepository.findOne({where: {id}})
+        const brand = await this.brandRepository.findOne({where: {id, is_deleted: false}})
         if (!brand) {
             throw new HttpException({message: `Бренда с id=${id} не найдено`}, HttpStatus.BAD_REQUEST)
         }

@@ -15,7 +15,7 @@ export class GroupsService {
   async create(dto: CreateGroupsDto, request: Request) {
     const token = request.headers['authorization'];
 
-    const group = await this.groupRepository.findOne({ where: { guid: dto.guid } });
+    const group = await this.groupRepository.findOne({ where: { guid: dto.guid, is_deleted: false } });
 
     if (!group) {
       await this.groupRepository.create(dto);
@@ -30,14 +30,15 @@ export class GroupsService {
       where: {
         guid: {
           [Op.ne]: "00000000-0000-0000-0000-000000000000"
-        }
+        },
+        is_deleted: false
       }
     });
     return group;
   }
 
   async getOne(id: number) {
-    const group = await this.groupRepository.findOne({ where: { id } })
+    const group = await this.groupRepository.findOne({ where: { id, is_deleted: false } })
     if (!group) {
       throw new HttpException({ message: `Группы с id=${id} не найдено` }, HttpStatus.BAD_REQUEST)
     }
