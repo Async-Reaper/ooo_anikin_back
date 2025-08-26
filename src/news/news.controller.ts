@@ -1,66 +1,51 @@
-import {Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards} from '@nestjs/common';
-import {ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {NewsService} from "./news.service";
-import {CreateNewsDto} from "./dto/create-news.dto";
-import {News} from "./news.model";
-import {JwtAuthGuard} from "../auth/jwt-auth.guard";
-
+import { Body, Controller, Delete, Get, Param, Post, Put, Req } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { NewsService } from "./news.service";
+import { CreateNewsDto } from "./dto/create-news.dto";
+import { News } from "./news.model";
+import { UpdateNewsDto } from "./dto/update-news.dto";
 
 @ApiTags('Новости')
 @Controller('news')
 export class NewsController {
     constructor(private newsService: NewsService) {}
 
-    @ApiOperation({summary: 'Создание портфолио'})
+    @ApiOperation({summary: 'Создание новости'})
     @ApiResponse({status: 200, type: News})
     @Post()
-    @UseGuards(JwtAuthGuard)
-    create(@Body() portfolioDto: CreateNewsDto, @Req() request: Request) {
-        console.log("1")
+    // @UseGuards(JwtAuthGuard)
+    create(@Body() newsDto: CreateNewsDto, @Req() request: Request) {
+        return this.newsService.create(newsDto, request);
     }
-    //
-    // @ApiOperation({summary: 'Редактирование портфолио'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Put('/:portfolioId')
+
+    @ApiOperation({summary: 'Редактирование новости'})
+    @ApiResponse({status: 200, type: News})
+    @Put('/:newsId')
     // @UseGuards(JwtAuthGuard)
-    // update(@Param('portfolioId') id: number, @Body() portfolio: UpdatePortfolioDto, @Req() request: Request) {
-    //     return this.portfolioService.updatePortfolio(id, portfolio, request);
-    // }
-    //
-    // @ApiOperation({summary: 'Удаление портфолио'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Delete('/:portfolioId')
+    update(@Param('newsId') newsId: number, @Body() newsDto: UpdateNewsDto, @Req() request: Request) {
+        return this.newsService.update(newsId, newsDto, request);
+    }
+
+    @ApiOperation({summary: 'Получение всех новостей для конкретного пользователя'})
+    @ApiResponse({status: 200, type: News})
+    @Get('/for-current')
     // @UseGuards(JwtAuthGuard)
-    // delete(@Param('portfolioId') id: number) {
-    //     return this.portfolioService.deletePortfolio(id);
-    // }
-    //
-    //
-    // @ApiOperation({summary: 'Получение всех портфолио для авторизованного пользователя'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Get('/user')
-    // getAllAuthPortUser(@Req() request: Request) {
-    //     return this.portfolioService.getAllPortAuthUser(request);
-    // }
-    //
-    // @ApiOperation({summary: 'Получение всех портфолио для неавторизованного пользователя'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Get('/:portfolioId')
-    // getAllPortNoAuthUser(@Param('portfolioId') id: number) {
-    //     return this.portfolioService.getAllPortNoAuthUser(id);
-    // }
-    //
-    // @ApiOperation({summary: 'Получение всех портфолио'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Get('')
-    // getAll() {
-    //     return this.portfolioService.getAll();
-    // }
-    //
-    // @ApiOperation({summary: 'Получение портфолио по id'})
-    // @ApiResponse({status: 200, type: Portfolio})
-    // @Get('brands/:portfolioId')
-    // getOne(@Param('portfolioId') id: number) {
-    //     return this.portfolioService.getOne(id);
-    // }
+    getAllForUser(@Req() request: Request) {
+        return this.newsService.getAllForUser(request);
+    }
+
+    @ApiOperation({summary: 'Получение всех новостей'})
+    @ApiResponse({status: 200, type: News})
+    @Get('')
+    getAll() {
+        return this.newsService.getAll();
+    }
+
+    @ApiOperation({summary: 'Удаление новости'})
+    @ApiResponse({status: 200, type: News})
+    @Delete('/:newsId')
+    // @UseGuards(JwtAuthGuard)
+    delete(@Param('newsId') id: number) {
+        return this.newsService.delete(id);
+    }
 }

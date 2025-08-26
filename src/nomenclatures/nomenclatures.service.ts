@@ -29,7 +29,7 @@ export class NomenclaturesService {
 
   async create(dto: CreateNomenclaturesDto) {
     try {
-      const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid: dto.guid, is_deleted: false }, raw: true });
+      const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid: dto.guid }, raw: true });
       if (!nomenclature.get({ plain: true })) {
         await this.nomenclaturesRepository.create(dto);
         console.log(dto)
@@ -54,6 +54,7 @@ export class NomenclaturesService {
     isDiscount?: boolean,
     isNew?: boolean,
     inStock?: boolean,
+    searchValue?: string,
   ) {
     const token = request.headers['authorization'];
 
@@ -95,13 +96,13 @@ export class NomenclaturesService {
           nomenclature => nomenclature.guid === productPrice.product_guid
         );
 
-        if (inStock) {
+        if (String(inStock) === 'true') {
           return productPrice.remains > 0
             && (nomenclature && {
               ...nomenclature,
               additionalInfo: {
-                price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
-                oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
+                price: productPrice.price,
+                oldPrice: productPrice.priceWithoutDiscount,
                 remains: productPrice.remains
               }
             })
@@ -110,8 +111,8 @@ export class NomenclaturesService {
         return nomenclature && {
           ...nomenclature,
           additionalInfo: {
-            price: productPrice.priceWithoutDiscount >= productPrice.price ? productPrice.price : productPrice.priceWithoutDiscount,
-            oldPrice: productPrice.priceWithoutDiscount >= productPrice.price && productPrice.price,
+            price: productPrice.price,
+            oldPrice: productPrice.priceWithoutDiscount,
             remains: productPrice.remains
           }
         };
@@ -158,7 +159,7 @@ export class NomenclaturesService {
   }
 
   /**
-   * @param guid гуид товара, может быть несколько значений
+   * @param guid гуиды товаров, может быть несколько значений
    * @param contractGUID гуид торговой точки
    */
   async getAdditionalInfo(guid: string | string[], contractGUID: string) {
@@ -168,7 +169,6 @@ export class NomenclaturesService {
       productItems: guid,
       contractGUID: contractGUID
     })
-    console.log(response)
     return response.data;
     // return [];
   }

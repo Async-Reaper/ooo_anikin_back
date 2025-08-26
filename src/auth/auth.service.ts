@@ -53,7 +53,7 @@ export class AuthService {
   private async generateToken(user: UserDto) {
     const payload = user;
     const access_token = this.jwtService.sign(
-      { userGUID: payload.userGUID, userName: payload.userName },
+      { userGUID: payload.userGUID, userName: payload.userName, role: payload.role },
       {
         secret: process.env.JWT_SECRET_ACCESS,
         expiresIn: '30m'

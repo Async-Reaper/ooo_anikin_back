@@ -13,4 +13,8 @@ export class UserDto {
   @ApiProperty({ example: 4324, description: 'Задолженность' })
   @IsInt({ message: 'Должно быть числом' })
   readonly debts: number;
+
+  @ApiProperty({ example: 'admin', description: 'Роль пользователя' })
+  @IsInt({ message: 'Должно быть числом' })
+  readonly role: "admin" | "buyer";
 }
