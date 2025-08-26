@@ -68,47 +68,150 @@ export class NomenclaturesService {
     }
 
     isDiscount && (where.isDiscount = isDiscount);
-
     isNew && (where.isNew = isNew);
 
-    const nomenclatures = await this.nomenclaturesRepository.findAll({
-      limit: limit,
-      offset: (page - 1) * limit,
-      where: {
-        ...where,
-        // is_deleted: false
-      },
-      raw: true
-    });
+    let nomenclatures: Nomenclatures[] = [];
+    let totalCount: number;
 
-    const totalCount = await this.nomenclaturesRepository.count({ where });
+    if (searchValue) {
+      // ✅ ИСПОЛЬЗУЕМ НЕЧЕТКИЙ ПОИСК здесь!
+      const allNomenclatures = await this.nomenclaturesRepository.findAll({
+        where: {
+          ...where,
+          // is_deleted: false
+        },
+        raw: true
+      });
+
+      // ✅ ФИЛЬТРУЕМ с помощью quickSimilarity
+      const filteredNomenclatures = allNomenclatures.filter(nomenclature =>
+        this.quickSimilarity(searchValue, nomenclature.shortName)
+      );
+
+      totalCount = filteredNomenclatures.length;
+
+      // Пагинация
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      nomenclatures = filteredNomenclatures.slice(startIndex, endIndex);
+
+    } else {
+      // Обычная логика без поиска
+      nomenclatures = await this.nomenclaturesRepository.findAll({
+        limit: limit,
+        offset: (page - 1) * limit,
+        where: {
+          ...where,
+          // is_deleted: false
+        },
+        raw: true
+      });
+
+      totalCount = await this.nomenclaturesRepository.count({ where });
+    }
 
     response.header('X-Total-Count', totalCount.toString());
     response.header('Access-Control-Expose-Headers', 'X-Total-Count');
 
-    if (tradePoint && token) {
+    if (tradePoint && token && nomenclatures.length > 0) {
       const nomenclaturesGuid: string[] = nomenclatures.map(nomenclature => nomenclature.guid);
-
       const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
 
-      const result: GetNomenclaturesDto[] = productPrices.map(productPrice => {
-        const nomenclature = nomenclatures.find(
-          nomenclature => nomenclature.guid === productPrice.product_guid
-        );
+      const result: GetNomenclaturesDto[] = this.processNomenclatures(
+        nomenclatures,
+        productPrices,
+        inStock
+      );
+      return result;
+    }
 
-        if (String(inStock) === 'true') {
-          return productPrice.remains > 0
-            && (nomenclature && {
-              ...nomenclature,
-              additionalInfo: {
-                price: productPrice.price,
-                oldPrice: productPrice.priceWithoutDiscount,
-                remains: productPrice.remains
-              }
-            })
+    return nomenclatures;
+  }
+
+// ✅ Вот та самая функция быстрого нечеткого поиска
+  private quickSimilarity(query: string, text: string): boolean {
+    if (!query || !text) return false;
+
+    const cleanQuery = query.toLowerCase().trim();
+    const cleanText = text.toLowerCase().trim();
+
+    // Если запрос пустой
+    if (cleanQuery === '') return true;
+
+    // Точное совпадение
+    if (cleanText.includes(cleanQuery)) return true;
+
+    // Common mistakes mapping
+    const commonMistakes: { [key: string]: string[] } = {
+      'а': ['a'],
+      'в': ['b'],
+      'е': ['e'],
+      'ё': ['e'],
+      'з': ['3', 'z'],
+      'и': ['i', 'u'],
+      'й': ['i', 'y'],
+      'к': ['k'],
+      'м': ['m'],
+      'н': ['h'],
+      'о': ['o', '0'],
+      'п': ['n', 'p'],
+      'р': ['p', 'r'],
+      'с': ['c', 's'],
+      'т': ['t'],
+      'у': ['y', 'u'],
+      'х': ['x', 'h'],
+      ' ': ['-', '_', '']
+    };
+
+    // Проверяем разные варианты написания
+    for (let i = 0; i <= cleanText.length - cleanQuery.length; i++) {
+      let matches = 0;
+      let totalChars = 0;
+
+      for (let j = 0; j < cleanQuery.length; j++) {
+        const queryChar = cleanQuery[j];
+        const textChar = cleanText[i + j];
+
+        if (queryChar === textChar) {
+          matches++;
+        } else if (commonMistakes[queryChar]?.includes(textChar)) {
+          matches++;
+        } else if (commonMistakes[textChar]?.includes(queryChar)) {
+          matches++;
         }
 
-        return nomenclature && {
+        totalChars++;
+      }
+
+      // Если совпало более 70% символов с учетом возможных ошибок
+      if (matches / totalChars >= 0.7) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+// Вспомогательный метод для обработки номенклатур
+  private processNomenclatures(
+    nomenclatures: Nomenclatures[],
+    productPrices: ProductAdditionalInfo[],
+    inStock?: boolean
+  ): GetNomenclaturesDto[] {
+    return productPrices
+      .map(productPrice => {
+        const nomenclature = nomenclatures.find(
+          n => n.guid === productPrice.product_guid
+        );
+
+        if (!nomenclature) return null;
+
+        // Проверка наличия на складе
+        if (String(inStock) === 'true' && productPrice.remains <= 0) {
+          return null;
+        }
+
+        return {
           ...nomenclature,
           additionalInfo: {
             price: productPrice.price,
@@ -117,11 +220,7 @@ export class NomenclaturesService {
           }
         };
       })
-        .filter(Boolean) as GetNomenclaturesDto[];
-      return result
-    }
-
-    return nomenclatures
+      .filter(Boolean) as GetNomenclaturesDto[];
   }
 
 
@@ -171,5 +270,50 @@ export class NomenclaturesService {
     })
     return response.data;
     // return [];
+  }
+
+  // Добавим в класс или в отдельный файл утилит
+  private fuzzySearch(query: string, text: string): boolean {
+    if (!query || !text) return false;
+
+    const cleanQuery = query.toLowerCase().trim();
+    const cleanText = text.toLowerCase().trim();
+
+    // Если запрос пустой или точное совпадение
+    if (cleanQuery === '') return true;
+    if (cleanText.includes(cleanQuery)) return true;
+
+    // Нечеткий поиск с учетом опечаток
+    return this.calculateSimilarity(cleanQuery, cleanText) > 0.7;
+  }
+
+  private calculateSimilarity(str1: string, str2: string): number {
+    // Простая реализация расстояния Левенштейна
+    const len1 = str1.length;
+    const len2 = str2.length;
+
+    const matrix: number[][] = [];
+
+    for (let i = 0; i <= len1; i++) {
+      matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= len2; j++) {
+      matrix[0][j] = j;
+    }
+
+    for (let i = 1; i <= len1; i++) {
+      for (let j = 1; j <= len2; j++) {
+        const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j] + 1,     // deletion
+          matrix[i][j - 1] + 1,     // insertion
+          matrix[i - 1][j - 1] + cost // substitution
+        );
+      }
+    }
+
+    const distance = matrix[len1][len2];
+    return 1 - distance / Math.max(len1, len2);
   }
 }
