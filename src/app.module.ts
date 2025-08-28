@@ -18,6 +18,8 @@ import { News } from "./news/news.model";
 import { Basket, BasketItem } from "./basket/basket.model";
 import { BasketModule } from "./basket/basket.module";
 import { Files } from "./files/files.model";
+import { Favorite } from "./favorite/favorite.model";
+import { FavoriteModule } from "./favorite/favorite.module";
 
 @Module({
   controllers: [],
@@ -36,7 +38,7 @@ import { Files } from "./files/files.model";
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [Brand, Group, News, Files, Nomenclatures, TradePoint, Basket, BasketItem],
+      models: [Brand, Group, News, Files, Nomenclatures, TradePoint, Basket, BasketItem, Favorite],
       autoLoadModels: true,
       // sync: {
       //   alter: true,
@@ -58,7 +60,8 @@ import { Files } from "./files/files.model";
     TradePointModule,
     NomenclaturesModule,
     NewsModule,
-    BasketModule
+    BasketModule,
+    FavoriteModule
   ]
 })
 export class AppModule {

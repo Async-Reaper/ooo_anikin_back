@@ -244,11 +244,48 @@ export class NomenclaturesService {
         price: priceWithoutDiscount >= price ? price : priceWithoutDiscount,
         oldPrice: priceWithoutDiscount >= price && price,
         remains: remains
-        // price: 43242,
-        // oldPrice: 43242,
-        // remains: 43242,
       }
     } as GetNomenclaturesDto
+  }
+
+  async getSimilar(groupGUID: string, contractGuid: string, request: Request) {
+    // const token = request.headers['authorization'];
+    let userGUID = undefined;
+
+    // if (token) {
+    //   const user: UserDto = this.jwtService.decode(token);
+    //   userGUID = user.userGUID;
+    // }
+
+    const nomenclatures = await this.nomenclaturesRepository.findAll({
+      offset: 0,
+      limit: 3,
+      where: { groupGUID },
+      raw: true
+    })
+
+    if (userGUID) {
+      const nomenclatureGUIDS = nomenclatures.map(nomenclature => nomenclature.guid);
+
+      const prices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclatureGUIDS, contractGuid);
+
+      const nomenclaturesWithPrice: GetNomenclaturesDto[] = nomenclatures.map(nomenclature => {
+        const findPrice = prices.find(price => price.product_guid === nomenclature.guid)
+
+        return {
+          ...nomenclature,
+          additionalInfo: {
+            price: findPrice.priceWithoutDiscount >= findPrice.price ? findPrice.price : findPrice.priceWithoutDiscount,
+            oldPrice: findPrice.priceWithoutDiscount >= findPrice.price && findPrice.price,
+            remains: findPrice.remains
+          }
+        } as GetNomenclaturesDto
+      })
+
+      return nomenclaturesWithPrice;
+    }
+
+    return nomenclatures;
   }
 
   async delete(guid: string) {

@@ -43,9 +43,12 @@ export class AuthService {
         { login: userDto.login, password: userDto.password }
       );
 
-
       return response.data;
     } catch (e) {
+      console.log("error", e)
+      if (e.message.includes('ETIMEDOUT')) {
+        throw new HttpException({ message: "Нет соединения с сервером 1С" }, HttpStatus.BAD_GATEWAY)
+      }
       throw new HttpException({ message: "Произошла ошибка" }, HttpStatus.BAD_REQUEST)
     }
   }

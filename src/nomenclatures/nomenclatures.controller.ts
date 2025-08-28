@@ -61,6 +61,19 @@ export class NomenclaturesController {
     return this.nomenclaturesService.getOne(guid, contractGuid, request);
   }
 
+  @ApiOperation({ summary: 'Получение похожих товаров' })
+  @ApiResponse({ status: 200, type: GetNomenclaturesDto })
+  @ApiQuery({ name: 'group', required: true, type: String })
+  @ApiQuery({ name: 'tradePoint', required: false, type: String })
+  @Get('/similar')
+  getSimilar(
+    @Query('group') groupGUID: string,
+    @Query('tradePoint') contractGuid: string,
+    @Req() request: Request
+  ) {
+    return this.nomenclaturesService.getSimilar(groupGUID, contractGuid, request);
+  }
+
   @ApiOperation({ summary: 'Удаление номенклатуры' })
   @ApiResponse({ status: 200, type: GetNomenclaturesDto })
   @Delete('/:guid')
