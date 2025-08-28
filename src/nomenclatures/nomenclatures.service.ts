@@ -226,11 +226,10 @@ export class NomenclaturesService {
 
   async getOne(guid: string, contractGuid: string, request: Request) {
     const token = request.headers['authorization'];
-    const { userGUID }: UserDto = this.jwtService.decode(token);
 
     const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid }, raw: true })
 
-    if (!userGUID) return nomenclature;
+    if (!token) return nomenclature;
 
     const {
       price,
@@ -249,13 +248,7 @@ export class NomenclaturesService {
   }
 
   async getSimilar(groupGUID: string, contractGuid: string, request: Request) {
-    // const token = request.headers['authorization'];
-    let userGUID = undefined;
-
-    // if (token) {
-    //   const user: UserDto = this.jwtService.decode(token);
-    //   userGUID = user.userGUID;
-    // }
+    const token = request.headers['authorization'];
 
     const nomenclatures = await this.nomenclaturesRepository.findAll({
       offset: 0,
@@ -264,7 +257,7 @@ export class NomenclaturesService {
       raw: true
     })
 
-    if (userGUID) {
+    if (token && this.jwtService.verify(token)) {
       const nomenclatureGUIDS = nomenclatures.map(nomenclature => nomenclature.guid);
 
       const prices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclatureGUIDS, contractGuid);

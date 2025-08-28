@@ -48,19 +48,6 @@ export class NomenclaturesController {
     return this.nomenclaturesService.getAll(request, response, page, limit, tradePoint, brands, group, isDiscount, isNew, inStock, searchValue);
   }
 
-  @ApiOperation({ summary: 'Получение номенклатуры по id' })
-  @ApiResponse({ status: 200, type: GetNomenclaturesDto })
-  @ApiQuery({ name: 'guid', required: false, type: String })
-  @ApiQuery({ name: 'contractGuid', required: false, type: String })
-  @Get('/:guid')
-  getOne(
-    @Query('guid') guid: string,
-    @Query('contractGuid') contractGuid: string,
-    @Req() request: Request
-  ) {
-    return this.nomenclaturesService.getOne(guid, contractGuid, request);
-  }
-
   @ApiOperation({ summary: 'Получение похожих товаров' })
   @ApiResponse({ status: 200, type: GetNomenclaturesDto })
   @ApiQuery({ name: 'group', required: true, type: String })
@@ -72,6 +59,19 @@ export class NomenclaturesController {
     @Req() request: Request
   ) {
     return this.nomenclaturesService.getSimilar(groupGUID, contractGuid, request);
+  }
+
+  @ApiOperation({ summary: 'Получение номенклатуры по id' })
+  @ApiResponse({ status: 200, type: GetNomenclaturesDto })
+  @ApiQuery({ name: 'guid', required: true, type: String })
+  @ApiQuery({ name: 'contractGuid', required: false, type: String })
+  @Get('/:guid')
+  getOne(
+    @Query('guid') guid: string,
+    @Query('contractGuid') contractGuid: string,
+    @Req() request: Request
+  ) {
+    return this.nomenclaturesService.getOne(guid, contractGuid, request);
   }
 
   @ApiOperation({ summary: 'Удаление номенклатуры' })
