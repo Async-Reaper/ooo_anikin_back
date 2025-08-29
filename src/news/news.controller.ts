@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NewsService } from "./news.service";
 import { CreateNewsDto } from "./dto/create-news.dto";
 import { News } from "./news.model";
 import { UpdateNewsDto } from "./dto/update-news.dto";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 
 @ApiTags('Новости')
 @Controller('news')
@@ -21,15 +22,23 @@ export class NewsController {
     @ApiOperation({summary: 'Редактирование новости'})
     @ApiResponse({status: 200, type: News})
     @Put('/:newsId')
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     update(@Param('newsId') newsId: number, @Body() newsDto: UpdateNewsDto, @Req() request: Request) {
         return this.newsService.update(newsId, newsDto, request);
+    }
+
+    @ApiOperation({summary: 'Получение всех новостей для админа'})
+    @ApiResponse({status: 200, type: News})
+    @Get('/for-admin')
+    @UseGuards(JwtAuthGuard)
+    getAllForAdmin(@Req() request: Request) {
+        return this.newsService.getAllForAdmin(request);
     }
 
     @ApiOperation({summary: 'Получение всех новостей для конкретного пользователя'})
     @ApiResponse({status: 200, type: News})
     @Get('/for-current')
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     getAllForUser(@Req() request: Request) {
         return this.newsService.getAllForUser(request);
     }
@@ -44,7 +53,7 @@ export class NewsController {
     @ApiOperation({summary: 'Удаление новости'})
     @ApiResponse({status: 200, type: News})
     @Delete('/:newsId')
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     delete(@Param('newsId') id: number) {
         return this.newsService.delete(id);
     }

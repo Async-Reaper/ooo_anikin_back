@@ -5,18 +5,6 @@ import * as process from "node:process";
 import { UserDto } from "./dto/user.dto";
 import axios from "axios";
 
-const users = [
-  {
-    userName: "user1",
-    userGUID: "2",
-    debts: 2341
-  },
-  {
-    userName: "user2",
-    userGUID: "1",
-    debts: 2341
-  },
-]
 
 @Injectable()
 export class AuthService {
@@ -26,7 +14,7 @@ export class AuthService {
 
   async login(userDto: AuthDto) {
     const user = await this.validateUser(userDto);
-    console.log(user)
+
     if (user) {
       return this.generateToken(user)
     } else {
@@ -36,11 +24,19 @@ export class AuthService {
 
 
   private async validateUser(userDto: AuthDto) {
+    // if (userDto.login === process.env.ADMIN_LOGIN && userDto.password === process.env.ADMIN_PASSWORD) {
+    //   return {userGUID: "admin", role: "admin", userName: "admin", debts: 0} as UserDto
+    // }
     const url = "http://192.168.1.95/ut_test_copy/hs/api_v2/authorization";
 
     try {
       const response = await axios.post(url,
-        { login: userDto.login, password: userDto.password }
+        { login: userDto.login, password: userDto.password },
+        {
+          headers: {
+            Authorization: process.env.TOKEN_1C
+          }
+        }
       );
 
       return response.data;
@@ -56,7 +52,11 @@ export class AuthService {
   private async generateToken(user: UserDto) {
     const payload = user;
     const access_token = this.jwtService.sign(
-      { userGUID: payload.userGUID, userName: payload.userName, role: payload.role },
+      {
+        userGUID: payload.userGUID,
+        userName: payload.userName,
+        role: payload.role
+      },
       {
         secret: process.env.JWT_SECRET_ACCESS,
         expiresIn: '30m'
@@ -66,7 +66,8 @@ export class AuthService {
     const refresh_token = this.jwtService.sign(
       {
         userGUID: payload.userGUID,
-        userName: payload.userName
+        userName: payload.userName,
+        role: payload.role
       },
       {
         secret: process.env.JWT_SECRET_REFRESH,

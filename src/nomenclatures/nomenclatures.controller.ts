@@ -50,15 +50,17 @@ export class NomenclaturesController {
 
   @ApiOperation({ summary: 'Получение похожих товаров' })
   @ApiResponse({ status: 200, type: GetNomenclaturesDto })
+  @ApiQuery({ name: 'productGUID', required: true, type: String })
   @ApiQuery({ name: 'group', required: true, type: String })
   @ApiQuery({ name: 'tradePoint', required: false, type: String })
   @Get('/similar')
   getSimilar(
+    @Query('productGUID') productGUID: string,
     @Query('group') groupGUID: string,
     @Query('tradePoint') contractGuid: string,
     @Req() request: Request
   ) {
-    return this.nomenclaturesService.getSimilar(groupGUID, contractGuid, request);
+    return this.nomenclaturesService.getSimilar(productGUID, groupGUID, contractGuid, request);
   }
 
   @ApiOperation({ summary: 'Получение номенклатуры по id' })

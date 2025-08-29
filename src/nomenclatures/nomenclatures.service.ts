@@ -9,6 +9,7 @@ import { JwtService } from "@nestjs/jwt";
 import { raw, Response } from "express";
 import axios from "axios";
 import process from "node:process";
+import { ConfigService } from "@nestjs/config";
 
 interface ProductAdditionalInfo {
   product_guid: string,
@@ -24,7 +25,8 @@ interface ProductAdditionalInfo {
 export class NomenclaturesService {
   constructor(@InjectModel(Nomenclatures)
               private nomenclaturesRepository: typeof Nomenclatures,
-              private jwtService: JwtService) {
+              private jwtService: JwtService,
+              private configService: ConfigService) {
   }
 
   async create(dto: CreateNomenclaturesDto) {
@@ -247,13 +249,18 @@ export class NomenclaturesService {
     } as GetNomenclaturesDto
   }
 
-  async getSimilar(groupGUID: string, contractGuid: string, request: Request) {
+  async getSimilar(productGUID: string, groupGUID: string, contractGuid: string, request: Request) {
     const token = request.headers['authorization'];
 
     const nomenclatures = await this.nomenclaturesRepository.findAll({
       offset: 0,
       limit: 3,
-      where: { groupGUID },
+      where: {
+        groupGUID,
+        guid: {
+          [Op.ne]: productGUID,
+        }
+      },
       raw: true
     })
 
@@ -295,9 +302,14 @@ export class NomenclaturesService {
     // const url = process.env.URL_1C + "/nomenclatures/currentData";
     const url = "http://192.168.1.95/ut_test_copy/hs/api_v2/nomenclatures/currentData";
     const response = await axios.post(url, {
-      productItems: guid,
-      contractGUID: contractGUID
-    })
+        productItems: guid,
+        contractGUID: contractGUID
+      },
+      {
+        headers: {
+          Authorization: this.configService.get('TOKEN_1C')
+        }
+      })
     return response.data;
     // return [];
   }

@@ -26,7 +26,8 @@ import { FavoriteModule } from "./favorite/favorite.module";
   providers: [],
   imports: [
     ConfigModule.forRoot({
-      envFilePath: `.env`
+      envFilePath: `.env`,
+      isGlobal: true,
     }),
     ServeStaticModule.forRoot({
       rootPath: path.resolve(__dirname, 'static'),
