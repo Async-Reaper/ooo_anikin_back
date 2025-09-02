@@ -310,6 +310,7 @@ export class NomenclaturesService {
           Authorization: this.configService.get('TOKEN_1C')
         }
       })
+    console.log(response.data)
     return response.data;
     // return [];
   }

@@ -8,6 +8,9 @@ import { UpdateBasketDto, UpdateBasketItemDto } from "./dto/update-basket.dto";
 import { NomenclaturesService } from "../nomenclatures/nomenclatures.service";
 import { GetBasketDto, GetBasketItemDto } from "./dto/get-basket.dto";
 import { GetNomenclaturesDto } from "../nomenclatures/dto/get-nomenclatures.dto";
+import { CreateOrderDto } from "./dto/create-order.dto";
+import axios from "axios";
+import { ConfigService } from "@nestjs/config";
 
 
 @Injectable()
@@ -16,7 +19,8 @@ export class BasketService {
     @InjectModel(Basket) private basketRepository: typeof Basket,
     @InjectModel(BasketItem) private basketItemRepository: typeof BasketItem,
     private nomenclatureService: NomenclaturesService,
-    private jwtService: JwtService) {
+    private jwtService: JwtService,
+    private configService: ConfigService) {
   }
 
   async createBasket(basketDto: CreateBasketDto, request: Request) {
@@ -186,19 +190,18 @@ export class BasketService {
     }
   }
 
-  async createOrder(id: number) {
+  async createOrder(dto: CreateOrderDto) {
     try {
-      const basket = await this.basketRepository.findOne({ where: { id }, raw: true })
+      const basket = await this.basketRepository.findOne({ where: { id: dto.basketId }, raw: true })
 
       if (!basket) {
         return new HttpException("Корзина не найдена", HttpStatus.BAD_REQUEST, undefined)
       }
 
-      if (basket) {
-        await this.basketItemRepository.destroy({ where: { basketId: id } })
-      }
-      const responseFetchOrder = await this.fetchDataOrder(basket);
-
+      // if (basket) {
+      //   await this.basketItemRepository.destroy({ where: { basketId: dto.basketId } })
+      // }
+      const responseFetchOrder = await this.fetchDataOrder(dto);
 
       return { message: "Заказ успешно оформлен. Ожидайте утверждения." }
     } catch (e) {
@@ -207,12 +210,23 @@ export class BasketService {
   }
 
 
-  private async fetchDataOrder(data: CreateBasketDto) {
+  private async fetchDataOrder(dto: CreateOrderDto) {
+    const data = {
+      header: { ...dto.header },
+      products: [...dto.products]
+    }
+    console.log(data)
     try {
-      console.log(data)
-      return new HttpException({ message: "Произошла ошибка" }, HttpStatus.BAD_REQUEST)
+      const response = await axios.post('http://192.168.1.95/ut_test_copy/hs/api_v2/docs/orders/build', data,
+        {
+          headers: {
+            Authorization: this.configService.get('TOKEN_1C')
+          }
+        })
+      return response.data;
     } catch (e) {
-      throw new HttpException({ message: "Произошла ошибка", details: e.message }, HttpStatus.BAD_REQUEST)
+      console.log(e.message)
+      throw new HttpException({ message: "Произошла ошибка c 1C", details: e.response.data }, HttpStatus.BAD_REQUEST)
     }
   }
 }

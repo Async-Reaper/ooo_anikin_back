@@ -91,4 +91,23 @@ export class AuthService {
 
     return userInfo;
   }
+
+  async getAll(request: Request) {
+    const token = request.headers['authorization'];
+
+    if (!token) {
+      return new HttpException({ message: "Пользователь не авторизован" }, HttpStatus.UNAUTHORIZED)
+    }
+
+    try {
+      const response = await axios.get('http://192.168.1.95/ut_test_copy/hs/api_v2/users', {
+        headers: {
+          Authorization: process.env.TOKEN_1C
+        }
+      })
+      return response.data;
+    } catch (e) {
+      console.log('[error get all users]', e.message)
+    }
+  }
 }

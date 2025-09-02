@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto/auth.dto";
 import { JwtService } from "@nestjs/jwt";
-import { UserDto } from "./dto/user.dto";
+import { UserDto, UsersListDto } from "./dto/user.dto";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 
 @ApiTags('Авторизация')
@@ -48,5 +48,13 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   init(@Req() request: Request) {
     return this.authService.init(request);
+  }
+
+  @Get('users')
+  @ApiOperation({ summary: 'Получение всех пользователей' })
+  @ApiResponse({ status: 200, type: UsersListDto })
+  @UseGuards(JwtAuthGuard)
+  getAll(@Req() request: Request) {
+    return this.authService.getAll(request);
   }
 }

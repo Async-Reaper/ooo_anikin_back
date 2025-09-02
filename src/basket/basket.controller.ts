@@ -5,6 +5,7 @@ import { CreateBasketDto, CreateBasketItemDto } from "./dto/create-basket.dto";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { UpdateBasketDto, UpdateBasketItemDto } from "./dto/update-basket.dto";
 import { GetBasketDto, GetBasketItemDto } from "./dto/get-basket.dto";
+import { CreateOrderDto } from "./dto/create-order.dto";
 
 
 @ApiTags('Корзина')
@@ -109,12 +110,11 @@ export class BasketController {
 
     @ApiOperation({summary: 'Оформление заказа'})
     @ApiResponse({status: 200, type: CreateBasketDto})
-    @ApiQuery({ name: 'basketId', required: true, type: Number })
     @Post('/order')
     // @UseGuards(JwtAuthGuard)
     createOrder(
-      @Query('basketId') basketId: number,
+      @Body() basketDto: CreateOrderDto,
     ) {
-        return this.basketService.createOrder(basketId);
+        return this.basketService.createOrder(basketDto);
     }
 }

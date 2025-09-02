@@ -18,3 +18,14 @@ export class UserDto {
   @IsInt({ message: 'Должно быть числом' })
   readonly role: "admin" | "buyer";
 }
+
+export class UsersListDto {
+
+  @ApiProperty({ example: 'userName', description: 'Логин' })
+  @IsString({ message: 'Должно быть строкой' })
+  readonly userName: string;
+
+  @ApiProperty({ example: 'userGUID', description: 'Пароль' })
+  @IsString({ message: 'Должно быть строкой' })
+  readonly userGUID: string;
+}
