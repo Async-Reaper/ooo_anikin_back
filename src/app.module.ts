@@ -20,9 +20,10 @@ import { BasketModule } from "./basket/basket.module";
 import { Files } from "./files/files.model";
 import { Favorite } from "./favorite/favorite.model";
 import { FavoriteModule } from "./favorite/favorite.module";
+import { CheckController } from "./check.controller";
 
 @Module({
-  controllers: [],
+  controllers: [CheckController],
   providers: [],
   imports: [
     ConfigModule.forRoot({
@@ -30,7 +31,8 @@ import { FavoriteModule } from "./favorite/favorite.module";
       isGlobal: true,
     }),
     ServeStaticModule.forRoot({
-      rootPath: path.resolve(__dirname, 'static'),
+      rootPath: path.resolve(__dirname, '..', 'static'),
+      serveRoot: '/static',
     }),
     SequelizeModule.forRoot({
       dialect: 'postgres',

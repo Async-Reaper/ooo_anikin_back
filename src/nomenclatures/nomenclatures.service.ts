@@ -226,30 +226,35 @@ export class NomenclaturesService {
   }
 
 
-  async getOne(guid: string, contractGuid: string, request: Request) {
+  async getOne(request: Request, guid: string, contractGuid?: string) {
     const token = request.headers['authorization'];
 
     const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid }, raw: true })
 
-    if (!token) return nomenclature;
+    if (!token || !contractGuid) return nomenclature;
 
-    const {
-      price,
-      remains,
-      priceWithoutDiscount
-    }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid);
+    try {
+      const {
+        price,
+        remains,
+        priceWithoutDiscount
+      }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid);
 
-    return {
-      ...nomenclature,
-      additionalInfo: {
-        price: priceWithoutDiscount >= price ? price : priceWithoutDiscount,
-        oldPrice: priceWithoutDiscount >= price && price,
-        remains: remains
-      }
-    } as GetNomenclaturesDto
+      return {
+        ...nomenclature,
+        additionalInfo: {
+          price: priceWithoutDiscount >= price ? price : priceWithoutDiscount,
+          oldPrice: priceWithoutDiscount >= price && price,
+          remains: remains
+        }
+      } as GetNomenclaturesDto
+    } catch (e) {
+      console.log(e.message)
+      return nomenclature;
+    }
   }
 
-  async getSimilar(productGUID: string, groupGUID: string, contractGuid: string, request: Request) {
+  async getSimilar(request: Request, productGUID: string, groupGUID: string, contractGuid?: string) {
     const token = request.headers['authorization'];
 
     const nomenclatures = await this.nomenclaturesRepository.findAll({
@@ -264,25 +269,30 @@ export class NomenclaturesService {
       raw: true
     })
 
-    if (token && this.jwtService.verify(token)) {
+    if (token) {
       const nomenclatureGUIDS = nomenclatures.map(nomenclature => nomenclature.guid);
 
-      const prices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclatureGUIDS, contractGuid);
+      try {
+        const prices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclatureGUIDS, contractGuid);
+        // console.log(prices)
+        const nomenclaturesWithPrice: GetNomenclaturesDto[] = nomenclatures.map(nomenclature => {
+          const findPrice = prices.find(price => price.product_guid === nomenclature.guid)
 
-      const nomenclaturesWithPrice: GetNomenclaturesDto[] = nomenclatures.map(nomenclature => {
-        const findPrice = prices.find(price => price.product_guid === nomenclature.guid)
+          return {
+            ...nomenclature,
+            additionalInfo: {
+              price: findPrice.priceWithoutDiscount >= findPrice.price ? findPrice.price : findPrice.priceWithoutDiscount,
+              oldPrice: findPrice.priceWithoutDiscount >= findPrice.price && findPrice.price,
+              remains: findPrice.remains
+            }
+          } as GetNomenclaturesDto
+        })
 
-        return {
-          ...nomenclature,
-          additionalInfo: {
-            price: findPrice.priceWithoutDiscount >= findPrice.price ? findPrice.price : findPrice.priceWithoutDiscount,
-            oldPrice: findPrice.priceWithoutDiscount >= findPrice.price && findPrice.price,
-            remains: findPrice.remains
-          }
-        } as GetNomenclaturesDto
-      })
-
-      return nomenclaturesWithPrice;
+        return nomenclaturesWithPrice;
+      } catch (e) {
+        console.log(e.message)
+        return nomenclatures
+      }
     }
 
     return nomenclatures;
@@ -299,20 +309,22 @@ export class NomenclaturesService {
    * @param contractGUID гуид торговой точки
    */
   async getAdditionalInfo(guid: string | string[], contractGUID: string) {
-    // const url = process.env.URL_1C + "/nomenclatures/currentData";
     const url = "http://192.168.1.95/ut_test_copy/hs/api_v2/nomenclatures/currentData";
-    const response = await axios.post(url, {
-        productItems: guid,
-        contractGUID: contractGUID
-      },
-      {
-        headers: {
-          Authorization: this.configService.get('TOKEN_1C')
-        }
-      })
-    console.log(response.data)
-    return response.data;
-    // return [];
+    try {
+      const response = await axios.post(url, {
+          productItems: guid,
+          contractGUID: contractGUID
+        },
+        {
+          headers: {
+            Authorization: this.configService.get('TOKEN_1C')
+          }
+        })
+      return response.data;
+    } catch (e) {
+      console.log(e)
+      return new HttpException({ message: 'Не удалось подключиться к 1С для получения цен и остатков' }, HttpStatus.BAD_GATEWAY)
+    }
   }
 
   // Добавим в класс или в отдельный файл утилит

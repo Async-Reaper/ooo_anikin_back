@@ -1,7 +1,8 @@
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
 import { ApiProperty } from "@nestjs/swagger";
+import { Nomenclatures } from "../nomenclatures/nomenclatures.model";
 
-interface FavoriteCreationAttrs {
+export interface FavoriteCreationAttrs {
   userGUID: string;
   productGUID: string;
 }
@@ -16,7 +17,11 @@ export class Favorite extends Model<Favorite, FavoriteCreationAttrs> {
   @Column({ type: DataType.STRING, allowNull: false })
   userGUID: string;
 
+  @ForeignKey(() => Nomenclatures)
   @ApiProperty({ example: 'af48a69c-15f1-11ec-890e-f0795994adc6', description: 'GUID товара' })
   @Column({ type: DataType.STRING, allowNull: false })
   productGUID: string;
+
+  @BelongsTo(() => Nomenclatures)
+  product: Nomenclatures;
 }

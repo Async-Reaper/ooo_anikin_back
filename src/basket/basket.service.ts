@@ -66,7 +66,7 @@ export class BasketService {
       const productsWithPrices = await Promise.all(
         basketItems.map(async (item) => {
           try {
-            const nomenclature: GetNomenclaturesDto = await this.nomenclatureService.getOne(item.nomenclatureGUID, tradePointGUID, request);
+            const nomenclature: GetNomenclaturesDto = await this.nomenclatureService.getOne(request, item.nomenclatureGUID, tradePointGUID);
             if (!nomenclature) {
               console.warn(`Товар ${item.nomenclatureGUID} не найден`);
               return null;
@@ -198,12 +198,11 @@ export class BasketService {
         return new HttpException("Корзина не найдена", HttpStatus.BAD_REQUEST, undefined)
       }
 
-      // if (basket) {
-      //   await this.basketItemRepository.destroy({ where: { basketId: dto.basketId } })
-      // }
-      const responseFetchOrder = await this.fetchDataOrder(dto);
+      if (basket) {
+        await this.basketItemRepository.destroy({ where: { basketId: dto.basketId } })
+      }
+      return await this.fetchDataOrder(dto);
 
-      return { message: "Заказ успешно оформлен. Ожидайте утверждения." }
     } catch (e) {
       throw new HttpException({ message: "Произошла ошибка", details: e.message }, HttpStatus.BAD_REQUEST)
     }
@@ -215,7 +214,7 @@ export class BasketService {
       header: { ...dto.header },
       products: [...dto.products]
     }
-    console.log(data)
+
     try {
       const response = await axios.post('http://192.168.1.95/ut_test_copy/hs/api_v2/docs/orders/build', data,
         {
@@ -223,7 +222,7 @@ export class BasketService {
             Authorization: this.configService.get('TOKEN_1C')
           }
         })
-      return response.data;
+      return { message: "Заказ успешно оформлен. Ожидайте утверждения." }
     } catch (e) {
       console.log(e.message)
       throw new HttpException({ message: "Произошла ошибка c 1C", details: e.response.data }, HttpStatus.BAD_REQUEST)

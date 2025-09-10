@@ -25,8 +25,8 @@ class OrderProducts {
   readonly product_guid: string;
 
   @ApiProperty({ example: 45, description: 'Количество товара' })
-  @IsInt({ message: 'Должно быть числом' })
-  readonly count: number;
+  @IsString({ message: 'Должно быть строкой' })
+  readonly count: string;
 }
 
 export class CreateOrderDto {

@@ -9,7 +9,7 @@ declare const module: any;
 async function start() {
     const PORT = process.env.PORT || 5000;
     const app = await NestFactory.create(AppModule)
-    console.log(process.env.POSTGRES_HOST)
+
     const config = new DocumentBuilder()
         .setTitle('API Аникин')
         .setDescription('Документация REST API')

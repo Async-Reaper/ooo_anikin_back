@@ -55,25 +55,25 @@ export class NomenclaturesController {
   @ApiQuery({ name: 'tradePoint', required: false, type: String })
   @Get('/similar')
   getSimilar(
+    @Req() request: Request,
     @Query('productGUID') productGUID: string,
     @Query('group') groupGUID: string,
-    @Query('tradePoint') contractGuid: string,
-    @Req() request: Request
+    @Query('tradePoint') contractGuid?: string,
   ) {
-    return this.nomenclaturesService.getSimilar(productGUID, groupGUID, contractGuid, request);
+    return this.nomenclaturesService.getSimilar(request, productGUID, groupGUID, contractGuid);
   }
 
   @ApiOperation({ summary: 'Получение номенклатуры по id' })
   @ApiResponse({ status: 200, type: GetNomenclaturesDto })
   @ApiQuery({ name: 'guid', required: true, type: String })
   @ApiQuery({ name: 'contractGuid', required: false, type: String })
-  @Get('/:guid')
+  @Get('/byId')
   getOne(
+    @Req() request: Request,
     @Query('guid') guid: string,
-    @Query('contractGuid') contractGuid: string,
-    @Req() request: Request
+    @Query('contractGuid') contractGuid?: string,
   ) {
-    return this.nomenclaturesService.getOne(guid, contractGuid, request);
+    return this.nomenclaturesService.getOne(request, guid, contractGuid);
   }
 
   @ApiOperation({ summary: 'Удаление номенклатуры' })
