@@ -36,4 +36,7 @@ export class CreateNomenclaturesDto {
 
   @ApiProperty({ example: 'при температуре от 0℃ до + 6℃', description: 'условия хранения' })
   readonly storageConditions: string;
+
+  @ApiProperty({ example: 'main', description: 'Тип базы' })
+  readonly typeOfBase: 'main' | 'additional';
 }

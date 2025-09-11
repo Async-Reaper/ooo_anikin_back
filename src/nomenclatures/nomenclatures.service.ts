@@ -59,7 +59,8 @@ export class NomenclaturesService {
     searchValue?: string,
   ) {
     const token = request.headers['authorization'];
-
+    const { typeOfBase }: UserDto = this.jwtService.decode(token)
+    console.log(typeOfBase)
     const where: WhereOptions<Nomenclatures> = {};
 
     if (group) where.groupGUID = group;
@@ -80,6 +81,7 @@ export class NomenclaturesService {
       const allNomenclatures = await this.nomenclaturesRepository.findAll({
         where: {
           ...where,
+          typeOfBase
           // is_deleted: false
         },
         raw: true
@@ -104,6 +106,7 @@ export class NomenclaturesService {
         offset: (page - 1) * limit,
         where: {
           ...where,
+          typeOfBase
           // is_deleted: false
         },
         raw: true
@@ -115,9 +118,9 @@ export class NomenclaturesService {
     response.header('X-Total-Count', totalCount.toString());
     response.header('Access-Control-Expose-Headers', 'X-Total-Count');
 
-    if (tradePoint && token && nomenclatures.length > 0) {
+    if (tradePoint && nomenclatures.length > 0) {
       const nomenclaturesGuid: string[] = nomenclatures.map(nomenclature => nomenclature.guid);
-      const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint);
+      const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint, typeOfBase);
 
       const result: GetNomenclaturesDto[] = this.processNomenclatures(
         nomenclatures,
@@ -228,17 +231,18 @@ export class NomenclaturesService {
 
   async getOne(request: Request, guid: string, contractGuid?: string) {
     const token = request.headers['authorization'];
+    const { typeOfBase }: UserDto = this.jwtService.decode(token)
 
-    const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid }, raw: true })
+    const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid, typeOfBase }, raw: true })
 
-    if (!token || !contractGuid) return nomenclature;
+    if (!contractGuid) return nomenclature;
 
     try {
       const {
         price,
         remains,
         priceWithoutDiscount
-      }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid);
+      }: ProductAdditionalInfo = await this.getAdditionalInfo(nomenclature.guid, contractGuid, typeOfBase);
 
       return {
         ...nomenclature,
@@ -249,19 +253,20 @@ export class NomenclaturesService {
         }
       } as GetNomenclaturesDto
     } catch (e) {
-      console.log(e.message)
       return nomenclature;
     }
   }
 
   async getSimilar(request: Request, productGUID: string, groupGUID: string, contractGuid?: string) {
     const token = request.headers['authorization'];
+    const { typeOfBase }: UserDto = this.jwtService.decode(token)
 
     const nomenclatures = await this.nomenclaturesRepository.findAll({
       offset: 0,
       limit: 3,
       where: {
         groupGUID,
+        typeOfBase,
         guid: {
           [Op.ne]: productGUID,
         }
@@ -269,11 +274,10 @@ export class NomenclaturesService {
       raw: true
     })
 
-    if (token) {
+    if (contractGuid) {
       const nomenclatureGUIDS = nomenclatures.map(nomenclature => nomenclature.guid);
-
       try {
-        const prices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclatureGUIDS, contractGuid);
+        const prices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclatureGUIDS, contractGuid, typeOfBase);
         // console.log(prices)
         const nomenclaturesWithPrice: GetNomenclaturesDto[] = nomenclatures.map(nomenclature => {
           const findPrice = prices.find(price => price.product_guid === nomenclature.guid)
@@ -307,11 +311,15 @@ export class NomenclaturesService {
   /**
    * @param guid гуиды товаров, может быть несколько значений
    * @param contractGUID гуид торговой точки
+   * @param baseType база, к которой идет обращение
    */
-  async getAdditionalInfo(guid: string | string[], contractGUID: string) {
-    const url = "http://192.168.1.95/ut_test_copy/hs/api_v2/nomenclatures/currentData";
+  async getAdditionalInfo(guid: string | string[], contractGUID: string, baseType: 'main' | 'additional') {
+    const urlMainBase = `${this.configService.get('URL_1C_MAIN')}/hs/api_v2/nomenclatures/currentData`;
+    const urlAdditionalBase = `${this.configService.get('URL_1C_ADDITIONAL')}/hs/api_v2/nomenclatures/currentData`;
+    const finishURL = baseType === 'main' ? urlMainBase : urlAdditionalBase;
+
     try {
-      const response = await axios.post(url, {
+      const response = await axios.post(finishURL, {
           productItems: guid,
           contractGUID: contractGUID
         },

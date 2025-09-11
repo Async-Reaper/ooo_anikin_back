@@ -13,4 +13,7 @@ export class CreateGroupsDto {
   @ApiProperty({ example: false, description: 'Пометка на удаление' })
   @IsBoolean({ message: 'Должно быть булево значение' })
   readonly is_deleted: boolean;
+
+  @ApiProperty({ example: 'main', description: 'Тип базы' })
+  typeOfBase: 'main' | 'additional';
 }

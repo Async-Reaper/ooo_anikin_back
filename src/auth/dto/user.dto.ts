@@ -17,6 +17,10 @@ export class UserDto {
   @ApiProperty({ example: 'admin', description: 'Роль пользователя' })
   @IsInt({ message: 'Должно быть числом' })
   readonly role: "admin" | "buyer";
+
+  @ApiProperty({ example: 'admin', description: 'Роль пользователя' })
+  @IsInt({ message: 'Должно быть числом' })
+  readonly typeOfBase: "main" | "additional";
 }
 
 export class UsersListDto {

@@ -32,7 +32,12 @@ export class AuthController {
 
     const refreshData = this.jwtService.decode(refreshCookie) as UserDto;
 
-    const newAccessToken = this.jwtService.sign({ userGUID: refreshData.userGUID, userName: refreshData.userName, role: refreshData.role }, {
+    const newAccessToken = this.jwtService.sign({
+      userGUID: refreshData.userGUID,
+      userName: refreshData.userName,
+      role: refreshData.role,
+      typeOfBase: refreshData.typeOfBase
+    }, {
       secret: process.env.JWT_SECRET_ACCESS,
       expiresIn: '30m',
     });

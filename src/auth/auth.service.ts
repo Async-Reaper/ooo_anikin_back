@@ -4,17 +4,21 @@ import { AuthDto } from "./dto/auth.dto";
 import * as process from "node:process";
 import { UserDto } from "./dto/user.dto";
 import axios from "axios";
+import { ConfigService } from "@nestjs/config";
 
 
 @Injectable()
 export class AuthService {
 
-  constructor(private jwtService: JwtService) {
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService) {
   }
 
   async login(userDto: AuthDto) {
     const user = await this.validateUser(userDto);
 
+    console.log(user)
     if (user) {
       return this.generateToken(user)
     } else {
@@ -24,13 +28,11 @@ export class AuthService {
 
 
   private async validateUser(userDto: AuthDto) {
-    // if (userDto.login === process.env.ADMIN_LOGIN && userDto.password === process.env.ADMIN_PASSWORD) {
-    //   return {userGUID: "admin", role: "admin", userName: "admin", debts: 0} as UserDto
-    // }
-    const url = "http://192.168.1.95/ut_test_copy/hs/api_v2/authorization";
+    const urlMainBase = `${this.configService.get('URL_1C_MAIN')}/authorization`;
+    const urlAdditionalBase = `${this.configService.get('URL_1C_ADDITIONAL')}/authorization`;
 
     try {
-      const response = await axios.post(url,
+      const response = await axios.post(urlMainBase,
         { login: userDto.login, password: userDto.password },
         {
           headers: {
@@ -39,13 +41,26 @@ export class AuthService {
         }
       );
 
-      return response.data;
+      return { ...response.data, typeOfBase: 'main' };
     } catch (e) {
       console.log("error", e)
-      if (e.message.includes('ETIMEDOUT')) {
-        throw new HttpException({ message: "Нет соединения с сервером 1С" }, HttpStatus.BAD_GATEWAY)
-      }
-      throw new HttpException({ message: "Произошла ошибка" }, HttpStatus.BAD_REQUEST)
+      // if (e.message.includes('ETIMEDOUT')) {
+      //   throw new HttpException({ message: "Нет соединения с сервером 1С" }, HttpStatus.BAD_GATEWAY)
+      // }
+
+      // if (e.response.status === 400) {
+        const responseSecond  = await axios.post(urlAdditionalBase,
+          { login: userDto.login, password: userDto.password },
+          {
+            headers: {
+              Authorization: process.env.TOKEN_1C
+            }
+          }
+        );
+
+        return { ...responseSecond .data, typeOfBase: 'additional' };
+      // }
+      // throw new HttpException({ message: "Произошла ошибка" }, HttpStatus.BAD_REQUEST)
     }
   }
 
@@ -55,7 +70,8 @@ export class AuthService {
       {
         userGUID: payload.userGUID,
         userName: payload.userName,
-        role: payload.role
+        role: payload.role,
+        typeOfBase: payload.typeOfBase
       },
       {
         secret: process.env.JWT_SECRET_ACCESS,
@@ -67,7 +83,8 @@ export class AuthService {
       {
         userGUID: payload.userGUID,
         userName: payload.userName,
-        role: payload.role
+        role: payload.role,
+        typeOfBase: payload.typeOfBase
       },
       {
         secret: process.env.JWT_SECRET_REFRESH,

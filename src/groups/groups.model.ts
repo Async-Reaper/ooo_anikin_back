@@ -5,6 +5,7 @@ import { Nomenclatures } from "../nomenclatures/nomenclatures.model";
 interface GroupCreationAttrs {
   guid: string;
   name: string;
+  typeOfBase: 'main' | 'additional';
   is_deleted: boolean;
 }
 
@@ -22,6 +23,10 @@ export class Group extends Model<Group, GroupCreationAttrs> {
   @ApiProperty({ example: false, description: 'Наименование группы' })
   @Column({ type: DataType.BOOLEAN })
   is_deleted: boolean;
+
+  @ApiProperty({ example: 'main', description: 'Тип базы' })
+  @Column({ type: DataType.BOOLEAN })
+  typeOfBase: 'main' | 'additional';
 
   @HasMany(() => Nomenclatures)
   nomenclatures: Nomenclatures[]

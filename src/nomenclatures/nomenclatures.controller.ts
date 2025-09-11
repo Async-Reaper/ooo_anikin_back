@@ -1,9 +1,24 @@
-import { Body, Controller, Delete, Get, Header, Headers, Param, Post, Query, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  Headers,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards
+} from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { NomenclaturesService } from "./nomenclatures.service";
 import { CreateNomenclaturesDto } from "./dto/create-nomenclatures.dto";
 import { GetNomenclaturesDto } from "./dto/get-nomenclatures.dto";
 import { Response } from "express";
+import { JwtAuthGuard } from "../auth/jwt-auth.guard";
+import { JwtService } from "@nestjs/jwt";
 
 @ApiTags('Товар')
 @Controller('nomenclatures')
@@ -15,6 +30,7 @@ export class NomenclaturesController {
   @ApiResponse({ status: 200, type: CreateNomenclaturesDto })
   // @UseInterceptors(FileInterceptor('img'))
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() dto: CreateNomenclaturesDto) {
     return this.nomenclaturesService.create(dto)
   }
@@ -31,6 +47,7 @@ export class NomenclaturesController {
   @ApiQuery({ name: 'group', required: false, type: String })
   @ApiQuery({ name: 'searchValue', required: false, type: String })
   @Get()
+  @UseGuards(JwtAuthGuard)
   @Header('Access-Control-Expose-Headers', 'X-Total-Count')
   getAll(
     @Req() request: Request,
@@ -54,6 +71,7 @@ export class NomenclaturesController {
   @ApiQuery({ name: 'group', required: true, type: String })
   @ApiQuery({ name: 'tradePoint', required: false, type: String })
   @Get('/similar')
+  @UseGuards(JwtAuthGuard)
   getSimilar(
     @Req() request: Request,
     @Query('productGUID') productGUID: string,
@@ -68,6 +86,7 @@ export class NomenclaturesController {
   @ApiQuery({ name: 'guid', required: true, type: String })
   @ApiQuery({ name: 'contractGuid', required: false, type: String })
   @Get('/byId')
+  @UseGuards(JwtAuthGuard)
   getOne(
     @Req() request: Request,
     @Query('guid') guid: string,
