@@ -18,14 +18,12 @@ export class AuthService {
   async login(userDto: AuthDto) {
     const user = await this.validateUser(userDto);
 
-    console.log(user)
     if (user) {
       return this.generateToken(user)
     } else {
       throw new HttpException({ message: "Такого пользователя не найдено" }, HttpStatus.BAD_REQUEST)
     }
   }
-
 
   private async validateUser(userDto: AuthDto) {
     const urlMainBase = `${this.configService.get('URL_1C_MAIN')}/authorization`;
@@ -117,7 +115,7 @@ export class AuthService {
     }
 
     try {
-      const response = await axios.get('http://192.168.1.95/ut_test_copy/hs/api_v2/users', {
+      const response = await axios.get(`${this.configService.get('URL_1C_MAIN')}/users`, {
         headers: {
           Authorization: process.env.TOKEN_1C
         }

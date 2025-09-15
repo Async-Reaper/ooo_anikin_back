@@ -4,6 +4,7 @@ import { Group } from "./groups.model";
 import { CreateGroupsDto } from "./dto/create-groups.dto";
 import { JwtService } from "@nestjs/jwt";
 import { Op } from "sequelize";
+import { UserDto } from "../auth/dto/user.dto";
 
 
 @Injectable()
@@ -14,8 +15,9 @@ export class GroupsService {
 
   async create(dto: CreateGroupsDto, request: Request) {
     const token = request.headers['authorization'];
+    const { typeOfBase }: UserDto = this.jwtService.decode(token)
 
-    const group = await this.groupRepository.findOne({ where: { guid: dto.guid, is_deleted: false } });
+    const group = await this.groupRepository.findOne({ where: { guid: dto.guid, is_deleted: false, typeOfBase } });
 
     if (!group) {
       await this.groupRepository.create(dto);
@@ -25,20 +27,27 @@ export class GroupsService {
     throw new HttpException({ message: "Группа успешно создана" }, HttpStatus.OK);
   }
 
-  async getAll() {
+  async getAll(request: Request) {
+    const token = request.headers['authorization'];
+    const { typeOfBase }: UserDto = this.jwtService.decode(token)
+
     const group = await this.groupRepository.findAll({
       where: {
         guid: {
           [Op.ne]: "00000000-0000-0000-0000-000000000000"
         },
-        is_deleted: false
+        is_deleted: false,
+        typeOfBase
       }
     });
     return group;
   }
 
-  async getOne(id: number) {
-    const group = await this.groupRepository.findOne({ where: { id, is_deleted: false } })
+  async getOne(id: number, request: Request) {
+    const token = request.headers['authorization'];
+    const { typeOfBase }: UserDto = this.jwtService.decode(token);
+
+    const group = await this.groupRepository.findOne({ where: { id, is_deleted: false, typeOfBase } })
     if (!group) {
       throw new HttpException({ message: `Группы с id=${id} не найдено` }, HttpStatus.BAD_REQUEST)
     }

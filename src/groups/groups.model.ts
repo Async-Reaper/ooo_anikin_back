@@ -25,7 +25,7 @@ export class Group extends Model<Group, GroupCreationAttrs> {
   is_deleted: boolean;
 
   @ApiProperty({ example: 'main', description: 'Тип базы' })
-  @Column({ type: DataType.BOOLEAN })
+  @Column({ type: DataType.STRING })
   typeOfBase: 'main' | 'additional';
 
   @HasMany(() => Nomenclatures)

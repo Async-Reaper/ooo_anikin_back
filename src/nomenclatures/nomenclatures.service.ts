@@ -32,7 +32,7 @@ export class NomenclaturesService {
   async create(dto: CreateNomenclaturesDto) {
     try {
       const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid: dto.guid }, raw: true });
-      if (!nomenclature.get({ plain: true })) {
+      if (!nomenclature) {
         await this.nomenclaturesRepository.create(dto);
         console.log(dto)
       } else {
@@ -60,7 +60,7 @@ export class NomenclaturesService {
   ) {
     const token = request.headers['authorization'];
     const { typeOfBase }: UserDto = this.jwtService.decode(token)
-    console.log(typeOfBase)
+
     const where: WhereOptions<Nomenclatures> = {};
 
     if (group) where.groupGUID = group;
@@ -70,8 +70,18 @@ export class NomenclaturesService {
         : (where.brandGUID = brands);
     }
 
+    if (isNew) {
+      const fifteenDaysAgo = new Date();
+      fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 31);
+
+      // Добавляем условие что createdAt >= 15 дней назад
+      where.createdAt = {
+        [Op.gte]: fifteenDaysAgo
+      };
+    }
+
     isDiscount && (where.isDiscount = isDiscount);
-    isNew && (where.isNew = isNew);
+    where.typeOfBase = typeOfBase;
 
     let nomenclatures: Nomenclatures[] = [];
     let totalCount: number;
@@ -308,14 +318,29 @@ export class NomenclaturesService {
     return { message: "Номеклатура удалена." }
   }
 
+  async updateAll() {
+    const nomenclatures = await this.nomenclaturesRepository.findAll({raw: true});
+
+    await Promise.all(
+      nomenclatures.map(nomenclature => this.nomenclaturesRepository.update(
+        { ...nomenclature, typeOfBase: 'main' },
+        {
+          where: { guid: nomenclature.guid }
+        }))
+    )
+
+    return { message: "Номеклатура обновлена." }
+  }
+
+
   /**
    * @param guid гуиды товаров, может быть несколько значений
    * @param contractGUID гуид торговой точки
    * @param baseType база, к которой идет обращение
    */
   async getAdditionalInfo(guid: string | string[], contractGUID: string, baseType: 'main' | 'additional') {
-    const urlMainBase = `${this.configService.get('URL_1C_MAIN')}/hs/api_v2/nomenclatures/currentData`;
-    const urlAdditionalBase = `${this.configService.get('URL_1C_ADDITIONAL')}/hs/api_v2/nomenclatures/currentData`;
+    const urlMainBase = `${this.configService.get('URL_1C_MAIN')}/nomenclatures/currentData`;
+    const urlAdditionalBase = `${this.configService.get('URL_1C_ADDITIONAL')}/nomenclatures/currentData`;
     const finishURL = baseType === 'main' ? urlMainBase : urlAdditionalBase;
 
     try {

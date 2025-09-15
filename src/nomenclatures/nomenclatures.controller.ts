@@ -6,7 +6,7 @@ import {
   Header,
   Headers,
   Param,
-  Post,
+  Post, Put,
   Query,
   Req,
   Res,
@@ -28,9 +28,7 @@ export class NomenclaturesController {
 
   @ApiOperation({ summary: 'Создание номеклатуры' })
   @ApiResponse({ status: 200, type: CreateNomenclaturesDto })
-  // @UseInterceptors(FileInterceptor('img'))
   @Post()
-  @UseGuards(JwtAuthGuard)
   create(@Body() dto: CreateNomenclaturesDto) {
     return this.nomenclaturesService.create(dto)
   }
@@ -100,5 +98,12 @@ export class NomenclaturesController {
   @Delete('/:guid')
   delete(@Param('guid') guid: string) {
     return this.nomenclaturesService.delete(guid);
+  }
+
+  @ApiOperation({ summary: 'Обновление номенклатуры' })
+  @ApiResponse({ status: 200, type: GetNomenclaturesDto })
+  @Put('/withType')
+  update() {
+    return this.nomenclaturesService.updateAll();
   }
 }

@@ -73,7 +73,7 @@ export class Nomenclatures extends Model<Nomenclatures, NomenclaturesCreationAtt
     measurement: string;
 
     @ApiProperty({ example: 'main', description: 'Тип базы' })
-    @Column({ type: DataType.BOOLEAN })
+    @Column({ type: DataType.STRING })
     typeOfBase: 'main' | 'additional';
 
     @ApiProperty({example: "120 суток (4 месяца)", description: 'Срок годности'})
