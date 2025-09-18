@@ -58,8 +58,13 @@ export class NomenclaturesService {
     inStock?: boolean,
     searchValue?: string,
   ) {
+    console.log('=== DEBUG PARAMS ===');
+    console.log('inStock:', inStock);
+    console.log('page:', page);
+    console.log('limit:', limit);
+    console.log('tradePoint:', tradePoint);
     const token = request.headers['authorization'];
-    const { typeOfBase }: UserDto = this.jwtService.decode(token)
+    const { typeOfBase }: UserDto = this.jwtService.decode(token);
 
     const where: WhereOptions<Nomenclatures> = {};
 
@@ -91,7 +96,6 @@ export class NomenclaturesService {
       const allNomenclatures = await this.nomenclaturesRepository.findAll({
         where: {
           ...where,
-          typeOfBase: typeOfBase,
           is_deleted: false
         },
         raw: true
@@ -114,35 +118,75 @@ export class NomenclaturesService {
       nomenclatures = await this.nomenclaturesRepository.findAll({
         limit: limit,
         offset: (page - 1) * limit,
+        where: { ...where, is_deleted: false },
+        raw: true
+      });
+
+      totalCount = await this.nomenclaturesRepository.count({
+        where: { ...where, is_deleted: false }
+      });
+    }
+
+    // ЕСЛИ НЕТ tradePoint - возвращаем сразу
+    if (!tradePoint) {
+      response.header('X-Total-Count', totalCount.toString());
+      response.header('Access-Control-Expose-Headers', 'X-Total-Count');
+      return nomenclatures;
+    }
+
+    let finalNomenclatures = nomenclatures;
+    let finalTotalCount = totalCount;
+    let productPrices = await this.getAdditionalInfo(
+      nomenclatures.map(n => n.guid),
+      tradePoint,
+      typeOfBase
+    );
+
+    // ЕСЛИ ФИЛЬТРУЕМ ПО ОСТАТКАМ
+    if (inStock.toString() === 'true') {
+      // 1. Получаем ВСЕ товары по фильтрам (без пагинации)
+      const allNomenclatures = await this.nomenclaturesRepository.findAll({
+        where: { ...where, is_deleted: false },
+        attributes: ['guid'],
+        raw: true
+      });
+
+      // 2. Получаем остатки для ВСЕХ товаров
+      const allProductPrices = await this.getAdditionalInfo(
+        allNomenclatures.map(n => n.guid),
+        tradePoint,
+        typeOfBase
+      );
+
+      // 3. Фильтруем только те, что в наличии
+      const inStockProductPrices = allProductPrices.filter(p => p.remains > 0);
+      finalTotalCount = inStockProductPrices.length;
+
+      // 4. ПАГИНАЦИЯ: берем только нужную страницу
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const pagedProductPrices = inStockProductPrices.slice(startIndex, endIndex);
+
+      // 5. Получаем данные только для страницы
+      const pagedGuids = pagedProductPrices.map(p => p.product_guid);
+      finalNomenclatures = await this.nomenclaturesRepository.findAll({
+        limit,
+        offset: (page - 1) * limit,
         where: {
+          guid: { [Op.in]: pagedGuids },
           ...where,
-          typeOfBase,
           is_deleted: false
         },
         raw: true
       });
 
-      totalCount = await this.nomenclaturesRepository.count({ where });
+      productPrices = pagedProductPrices;
     }
 
-    response.header('X-Total-Count', totalCount.toString());
+    response.header('X-Total-Count', finalTotalCount.toString());
     response.header('Access-Control-Expose-Headers', 'X-Total-Count');
 
-    if (tradePoint && nomenclatures.length > 0) {
-      const nomenclaturesGuid: string[] = nomenclatures.map(nomenclature => nomenclature.guid);
-      const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint, typeOfBase);
-
-
-      const result: GetNomenclaturesDto[] = this.processNomenclatures(
-        nomenclatures,
-        productPrices,
-        response,
-        inStock
-      );
-      return result;
-    }
-
-    return nomenclatures;
+    return this.processNomenclatures(finalNomenclatures, productPrices, inStock);
   }
 
 // ✅ Вот та самая функция быстрого нечеткого поиска
@@ -213,12 +257,8 @@ export class NomenclaturesService {
   private processNomenclatures(
     nomenclatures: Nomenclatures[],
     productPrices: ProductAdditionalInfo[],
-    response: Response,
     inStock?: boolean
   ): GetNomenclaturesDto[] {
-    response.header('X-Total-Count', productPrices.length.toString());
-    response.header('Access-Control-Expose-Headers', 'X-Total-Count');
-
     return productPrices
       .map(productPrice => {
         const nomenclature = nomenclatures.find(
