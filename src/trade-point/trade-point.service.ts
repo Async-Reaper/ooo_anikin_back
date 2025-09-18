@@ -21,10 +21,9 @@ export class TradePointService {
     }
 
     async getAll(request: Request) {
-        // const token = request.headers['authorization'];
-        // const { userGUID }: UserDto = this.jwtService.decode(token);
-        // const tradePoint = await this.tradePointRepository.findAll({where: {counterpartyGuid: userGUID}});
-        const tradePoint = await this.tradePointRepository.findAll();
+        const token = request.headers['authorization'];
+        const { userGUID }: UserDto = this.jwtService.decode(token);
+        const tradePoint = await this.tradePointRepository.findAll({where: {counterpartyGuid: userGUID}});
         return tradePoint
     }
 

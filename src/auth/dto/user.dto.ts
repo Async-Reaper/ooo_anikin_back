@@ -20,7 +20,7 @@ export class UserDto {
 
   @ApiProperty({ example: 'admin', description: 'Роль пользователя' })
   @IsInt({ message: 'Должно быть числом' })
-  readonly typeOfBase: "main" | "additional";
+  readonly typeOfBase: "main" | "additiona";
 }
 
 export class UsersListDto {

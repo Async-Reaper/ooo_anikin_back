@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Req } from '@nestjs/common';
 import { InjectModel } from "@nestjs/sequelize";
 import { Basket, BasketItem } from "./basket.model";
 import { CreateBasketDto, CreateBasketItemDto } from "./dto/create-basket.dto";
@@ -190,7 +190,10 @@ export class BasketService {
     }
   }
 
-  async createOrder(dto: CreateOrderDto) {
+  async createOrder(dto: CreateOrderDto, request: Request) {
+    const token = request.headers['authorization'];
+    const { typeOfBase }: UserDto = this.jwtService.decode(token)
+
     try {
       const basket = await this.basketRepository.findOne({ where: { id: dto.basketId }, raw: true })
 
@@ -201,7 +204,7 @@ export class BasketService {
       if (basket) {
         await this.basketItemRepository.destroy({ where: { basketId: dto.basketId } })
       }
-      return await this.fetchDataOrder(dto);
+      return await this.fetchDataOrder(dto, typeOfBase);
 
     } catch (e) {
       throw new HttpException({ message: "Произошла ошибка", details: e.message }, HttpStatus.BAD_REQUEST)
@@ -209,14 +212,18 @@ export class BasketService {
   }
 
 
-  private async fetchDataOrder(dto: CreateOrderDto) {
+  private async fetchDataOrder(dto: CreateOrderDto, baseType: 'main' | 'additiona') {
     const data = {
       header: { ...dto.header },
       products: [...dto.products]
     }
 
+    const urlMainBase = `${this.configService.get('URL_1C_MAIN')}/docs/orders/build`;
+    const urlAdditionalBase = `${this.configService.get('URL_1C_ADDITIONAL')}/docs/orders/build`;
+    const finishURL = baseType === 'main' ? urlMainBase : urlAdditionalBase;
+
     try {
-      const response = await axios.post('http://192.168.1.95/ut_test_copy/hs/api_v2/docs/orders/build', data,
+      const response = await axios.post(finishURL, data,
         {
           headers: {
             Authorization: this.configService.get('TOKEN_1C')

@@ -111,10 +111,11 @@ export class BasketController {
     @ApiOperation({summary: 'Оформление заказа'})
     @ApiResponse({status: 200, type: CreateBasketDto})
     @Post('/order')
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     createOrder(
       @Body() basketDto: CreateOrderDto,
+      @Req() request: Request,
     ) {
-        return this.basketService.createOrder(basketDto);
+        return this.basketService.createOrder(basketDto, request);
     }
 }

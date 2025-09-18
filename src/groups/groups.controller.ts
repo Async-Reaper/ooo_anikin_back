@@ -14,7 +14,6 @@ export class GroupsController {
     @ApiOperation({summary: 'Создание группы'})
     @ApiResponse({status: 200, type: "Группа успешно создана"})
     @Post()
-    @UseGuards(JwtAuthGuard)
     create(@Body() groupDto: CreateGroupsDto, @Req() request: Request) {
         return this.groupService.create(groupDto, request);
     }
@@ -30,7 +29,7 @@ export class GroupsController {
     @ApiOperation({summary: 'Получение всех групп'})
     @ApiResponse({status: 200, type: Group})
     @Get()
-    @UseGuards(JwtAuthGuard)
+    // @UseGuards(JwtAuthGuard)
     getAll(@Req() request: Request) {
         return this.groupService.getAll(request);
     }

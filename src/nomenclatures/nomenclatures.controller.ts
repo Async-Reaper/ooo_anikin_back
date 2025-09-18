@@ -45,7 +45,7 @@ export class NomenclaturesController {
   @ApiQuery({ name: 'group', required: false, type: String })
   @ApiQuery({ name: 'searchValue', required: false, type: String })
   @Get()
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Header('Access-Control-Expose-Headers', 'X-Total-Count')
   getAll(
     @Req() request: Request,

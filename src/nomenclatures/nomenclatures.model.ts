@@ -65,7 +65,7 @@ export class Nomenclatures extends Model<Nomenclatures, NomenclaturesCreationAtt
     is_deleted: boolean;
 
     @ApiProperty({example: 500, description: 'Вес'})
-    @Column({type: DataType.INTEGER, allowNull: true})
+    @Column({type: DataType.DECIMAL(6, 3), allowNull: true})
     weight: number;
 
     @ApiProperty({example: "гр", description: 'Метод измерения'})

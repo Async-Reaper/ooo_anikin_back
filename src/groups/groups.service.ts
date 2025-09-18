@@ -14,10 +14,8 @@ export class GroupsService {
   }
 
   async create(dto: CreateGroupsDto, request: Request) {
-    const token = request.headers['authorization'];
-    const { typeOfBase }: UserDto = this.jwtService.decode(token)
-
-    const group = await this.groupRepository.findOne({ where: { guid: dto.guid, is_deleted: false, typeOfBase } });
+    const a: number = 1.2
+    const group = await this.groupRepository.findOne({ where: { guid: dto.guid, is_deleted: false } });
 
     if (!group) {
       await this.groupRepository.create(dto);

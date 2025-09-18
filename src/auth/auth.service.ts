@@ -56,7 +56,7 @@ export class AuthService {
           }
         );
 
-        return { ...responseSecond .data, typeOfBase: 'additional' };
+        return { ...responseSecond .data, typeOfBase: 'additiona' };
       // }
       // throw new HttpException({ message: "Произошла ошибка" }, HttpStatus.BAD_REQUEST)
     }

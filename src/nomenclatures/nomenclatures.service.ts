@@ -91,8 +91,8 @@ export class NomenclaturesService {
       const allNomenclatures = await this.nomenclaturesRepository.findAll({
         where: {
           ...where,
-          typeOfBase
-          // is_deleted: false
+          typeOfBase: typeOfBase,
+          is_deleted: false
         },
         raw: true
       });
@@ -116,8 +116,8 @@ export class NomenclaturesService {
         offset: (page - 1) * limit,
         where: {
           ...where,
-          typeOfBase
-          // is_deleted: false
+          typeOfBase,
+          is_deleted: false
         },
         raw: true
       });
@@ -132,9 +132,11 @@ export class NomenclaturesService {
       const nomenclaturesGuid: string[] = nomenclatures.map(nomenclature => nomenclature.guid);
       const productPrices: ProductAdditionalInfo[] = await this.getAdditionalInfo(nomenclaturesGuid, tradePoint, typeOfBase);
 
+
       const result: GetNomenclaturesDto[] = this.processNomenclatures(
         nomenclatures,
         productPrices,
+        response,
         inStock
       );
       return result;
@@ -211,8 +213,12 @@ export class NomenclaturesService {
   private processNomenclatures(
     nomenclatures: Nomenclatures[],
     productPrices: ProductAdditionalInfo[],
+    response: Response,
     inStock?: boolean
   ): GetNomenclaturesDto[] {
+    response.header('X-Total-Count', productPrices.length.toString());
+    response.header('Access-Control-Expose-Headers', 'X-Total-Count');
+
     return productPrices
       .map(productPrice => {
         const nomenclature = nomenclatures.find(
@@ -338,7 +344,7 @@ export class NomenclaturesService {
    * @param contractGUID гуид торговой точки
    * @param baseType база, к которой идет обращение
    */
-  async getAdditionalInfo(guid: string | string[], contractGUID: string, baseType: 'main' | 'additional') {
+  async getAdditionalInfo(guid: string | string[], contractGUID: string, baseType: 'main' | 'additiona') {
     const urlMainBase = `${this.configService.get('URL_1C_MAIN')}/nomenclatures/currentData`;
     const urlAdditionalBase = `${this.configService.get('URL_1C_ADDITIONAL')}/nomenclatures/currentData`;
     const finishURL = baseType === 'main' ? urlMainBase : urlAdditionalBase;
