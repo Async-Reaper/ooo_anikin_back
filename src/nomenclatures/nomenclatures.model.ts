@@ -76,6 +76,10 @@ export class Nomenclatures extends Model<Nomenclatures, NomenclaturesCreationAtt
     @Column({ type: DataType.STRING })
     typeOfBase: 'main' | 'additional';
 
+    @ApiProperty({ example: true, description: 'Признак отображения определенным пользователям' })
+    @Column({ type: DataType.BOOLEAN, allowNull: true })
+    isWholesale: boolean;
+
     @ApiProperty({example: "120 суток (4 месяца)", description: 'Срок годности'})
     @Column({type: DataType.STRING, allowNull: true})
     expirationDate: string;

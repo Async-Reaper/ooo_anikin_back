@@ -86,11 +86,11 @@ export class BasketService {
       ) as GetBasketItemDto[];
 
       // Возврат пустого значения, в случае если товар с передаваемым guid не найден
-      const validProducts = productsWithPrices.filter(product => product !== null);
+      // const validProducts = productsWithPrices.filter(product => product !== null);
 
       return ({
         ...basket,
-        items: [...validProducts]
+        items: [...productsWithPrices]
       }) as GetBasketDto;
 
     } catch (e) {
@@ -194,25 +194,15 @@ export class BasketService {
     const token = request.headers['authorization'];
     const { typeOfBase }: UserDto = this.jwtService.decode(token)
 
-    try {
-      const basket = await this.basketRepository.findOne({ where: { id: dto.basketId }, raw: true })
+    const basket = await this.basketRepository.findOne({ where: { id: dto.basketId }, raw: true })
 
-      if (!basket) {
-        return new HttpException("Корзина не найдена", HttpStatus.BAD_REQUEST, undefined)
-      }
-
-      if (basket) {
-        await this.basketItemRepository.destroy({ where: { basketId: dto.basketId } })
-      }
-      return await this.fetchDataOrder(dto, typeOfBase);
-
-    } catch (e) {
-      throw new HttpException({ message: "Произошла ошибка", details: e.message }, HttpStatus.BAD_REQUEST)
+    if (!basket) {
+      return new HttpException("Корзина не найдена", HttpStatus.BAD_REQUEST, undefined)
     }
-  }
 
-
-  private async fetchDataOrder(dto: CreateOrderDto, baseType: 'main' | 'additiona') {
+    if (basket) {
+      await this.basketItemRepository.destroy({ where: { basketId: dto.basketId } })
+    }
     const data = {
       header: { ...dto.header },
       products: [...dto.products]
@@ -220,19 +210,26 @@ export class BasketService {
 
     const urlMainBase = `${this.configService.get('URL_1C_MAIN')}/docs/orders/build`;
     const urlAdditionalBase = `${this.configService.get('URL_1C_ADDITIONAL')}/docs/orders/build`;
-    const finishURL = baseType === 'main' ? urlMainBase : urlAdditionalBase;
+    const finishURL = typeOfBase === 'main' ? urlMainBase : urlAdditionalBase;
 
-    try {
       const response = await axios.post(finishURL, data,
         {
           headers: {
             Authorization: this.configService.get('TOKEN_1C')
-          }
+          },
+          validateStatus: null
         })
+
+      if (response.status >= 400) {
+        throw new HttpException(
+          {
+            message: "Произошла ошибка c 1C",
+            details: response.data, // response.data содержит ответ от 1С
+            status: response.status
+          },
+          HttpStatus.BAD_REQUEST
+        );
+      }
       return { message: "Заказ успешно оформлен. Ожидайте утверждения." }
-    } catch (e) {
-      console.log(e.message)
-      throw new HttpException({ message: "Произошла ошибка c 1C", details: e.response.data }, HttpStatus.BAD_REQUEST)
-    }
   }
 }

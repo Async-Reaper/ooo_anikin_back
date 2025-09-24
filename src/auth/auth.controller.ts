@@ -29,14 +29,15 @@ export class AuthController {
       .find((row) => row.startsWith('refresh_token='))
       ?.split('=')[1];
 
-
     const refreshData = this.jwtService.decode(refreshCookie) as UserDto;
 
     const newAccessToken = this.jwtService.sign({
       userGUID: refreshData.userGUID,
       userName: refreshData.userName,
       role: refreshData.role,
-      typeOfBase: refreshData.typeOfBase
+      typeOfBase: refreshData.typeOfBase,
+      country: refreshData.country ,
+      isNotControlRemains: refreshData.isNotControlRemains
     }, {
       secret: process.env.JWT_SECRET_ACCESS,
       expiresIn: '30m',

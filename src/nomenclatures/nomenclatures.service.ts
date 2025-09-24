@@ -58,13 +58,8 @@ export class NomenclaturesService {
     inStock?: boolean,
     searchValue?: string,
   ) {
-    console.log('=== DEBUG PARAMS ===');
-    console.log('inStock:', inStock);
-    console.log('page:', page);
-    console.log('limit:', limit);
-    console.log('tradePoint:', tradePoint);
     const token = request.headers['authorization'];
-    const { typeOfBase }: UserDto = this.jwtService.decode(token);
+    const { typeOfBase, country }: UserDto = this.jwtService.decode(token);
 
     const where: WhereOptions<Nomenclatures> = {};
 
@@ -87,6 +82,12 @@ export class NomenclaturesService {
 
     isDiscount && (where.isDiscount = isDiscount);
     where.typeOfBase = typeOfBase;
+
+    if (!country) {
+      where.isWholesale = {
+        [Op.not]: true
+      };
+    }
 
     let nomenclatures: Nomenclatures[] = [];
     let totalCount: number;
@@ -290,7 +291,6 @@ export class NomenclaturesService {
     const { typeOfBase }: UserDto = this.jwtService.decode(token)
 
     const nomenclature = await this.nomenclaturesRepository.findOne({ where: { guid, typeOfBase }, raw: true })
-
     if (!contractGuid) return nomenclature;
 
     try {
@@ -369,7 +369,7 @@ export class NomenclaturesService {
 
     await Promise.all(
       nomenclatures.map(nomenclature => this.nomenclaturesRepository.update(
-        { ...nomenclature, typeOfBase: 'main' },
+        { ...nomenclature, isWholesale: false },
         {
           where: { guid: nomenclature.guid }
         }))

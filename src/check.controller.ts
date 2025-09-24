@@ -5,7 +5,8 @@ import axios from "axios";
 @ApiTags('Проверка соединения')
 @Controller('connection')
 export class CheckController {
-  constructor() {}
+  constructor(
+  ) {}
 
   @ApiOperation({ summary: 'Проверка соединения' })
   @ApiResponse({ status: 200 })
@@ -22,17 +23,13 @@ export class CheckController {
   @Get('1c')
   async check1C() {
     try {
-      const response = await axios.get('http://192.168.1.95/ut_test_copy/');
-      setTimeout(() => {
-        if (!response.data) {
-          throw new HttpException({message: 'Сервер не отвечает'}, HttpStatus.BAD_GATEWAY)
-        }
-      }, 8000)
+      const response = await axios.get('http://95.170.144.95/ut_test_copy/');
       return {
         status: 200,
         message: 'Соединение установлено'
       }
     } catch (e) {
+      console.log(e)
       throw new HttpException({message: 'Сервер не отвечает'}, HttpStatus.BAD_GATEWAY)
     }
   }

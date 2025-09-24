@@ -47,16 +47,16 @@ export class AuthService {
       // }
 
       // if (e.response.status === 400) {
-        const responseSecond  = await axios.post(urlAdditionalBase,
-          { login: userDto.login, password: userDto.password },
-          {
-            headers: {
-              Authorization: process.env.TOKEN_1C
-            }
+      const responseSecond = await axios.post(urlAdditionalBase,
+        { login: userDto.login, password: userDto.password },
+        {
+          headers: {
+            Authorization: process.env.TOKEN_1C
           }
-        );
+        }
+      );
 
-        return { ...responseSecond .data, typeOfBase: 'additiona' };
+      return { ...responseSecond.data, typeOfBase: 'additiona' };
       // }
       // throw new HttpException({ message: "Произошла ошибка" }, HttpStatus.BAD_REQUEST)
     }
@@ -69,7 +69,9 @@ export class AuthService {
         userGUID: payload.userGUID,
         userName: payload.userName,
         role: payload.role,
-        typeOfBase: payload.typeOfBase
+        typeOfBase: payload.typeOfBase,
+        country: payload.country,
+        isNotControlRemains: payload.isNotControlRemains
       },
       {
         secret: process.env.JWT_SECRET_ACCESS,
@@ -82,7 +84,9 @@ export class AuthService {
         userGUID: payload.userGUID,
         userName: payload.userName,
         role: payload.role,
-        typeOfBase: payload.typeOfBase
+        typeOfBase: payload.typeOfBase,
+        country: payload.country,
+        isNotControlRemains: payload.isNotControlRemains
       },
       {
         secret: process.env.JWT_SECRET_REFRESH,
